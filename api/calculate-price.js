@@ -207,6 +207,27 @@ function analyzeMessage(raw, session = {}) {
   };
 }
 
+// --- YENİ: Türkçe tarih ve checkout fonksiyonu
+function formatDateTR(date) {
+  const gunler = ["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
+  const aylar = [
+    "Ocak","Şubat","Mart","Nisan","Mayıs","Haziran",
+    "Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"
+  ];
+  if (!(date instanceof Date)) date = new Date(date);
+  const gun = date.getDate();
+  const ay = aylar[date.getMonth()];
+  const yil = date.getFullYear();
+  const gunAdi = gunler[date.getDay()];
+  return `${gun} ${ay} ${yil} ${gunAdi}`;
+}
+function getCheckoutDate(checkin, nights) {
+  let d = new Date(checkin);
+  d.setDate(d.getDate() + nights);
+  return d;
+}
+
+// --- HANDLER ---
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({error:"POST kullanın"});
   let { message, sessionId, context } = req.body;
@@ -235,14 +256,17 @@ export default async function handler(req, res) {
     return res.status(200).json({ completed: true, error: hesap.error });
   }
 
+  // Türkçe insan gibi checkin/checkout, teknik alanlarla birlikte dön
+  const checkoutDate = getCheckoutDate(analyze.checkin, hesap.nights);
   res.status(200).json({
     completed: true,
-    checkin: analyze.checkin,
-    nights: analyze.nightCount,
-    adults: hesap.totalAdults,
-    children: hesap.totalChildren,
-    childrenAges: hesap.childrenAges,
-    price: hesap.price,
+    checkin: formatDateTR(analyze.checkin),          // "14 Temmuz 2025 Pazartesi"
+    checkout: formatDateTR(checkoutDate),            // "18 Temmuz 2025 Cuma"
+    nights: hesap.nights,                            // 4
+    adults: hesap.totalAdults,                       // 2
+    children: hesap.totalChildren,                   // 1
+    childrenAges: hesap.childrenAges,                // [8]
+    price: hesap.price,                              // 25400
     info: hesap.info,
     session: sessionStore[sessionId]
   });
