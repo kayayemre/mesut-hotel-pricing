@@ -398,7 +398,14 @@
             "3_0": 2.7       // 3 yetişkin
         };
 
-        // Sayfa yüklendiğinde bugünün tarihini set et
+        // API kontrol - sayfa yüklendiğinde hemen çalışsın
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has('api') && urlParams.get('api') === 'calculate') {
+    const message = urlParams.get('message');
+    if (message) {
+        document.body.innerHTML = '<div style="padding: 20px; font-family: Arial;"><h1>API Test</h1><p>Mesaj: ' + message + '</p></div>';
+    }
+}// Sayfa yüklendiğinde bugünün tarihini set et
         window.onload = function() {
             const today = new Date();
             const tomorrow = new Date(today);
