@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Otel Fiyat Hesaplama Sistemi</title>
+    <title>MESUT HOTEL - Fiyat Hesaplama</title>
     <style>
         * {
             margin: 0;
@@ -275,13 +275,7 @@
                 <h3>🔗 API Endpoint</h3>
                 <p>Bot entegrasyonu için:</p>
                 <div class="api-endpoint">
-                    POST /api/calculate-price<br>
-                    {<br>
-                    &nbsp;&nbsp;"checkin": "2025-07-12",<br>
-                    &nbsp;&nbsp;"checkout": "2025-07-19",<br>
-                    &nbsp;&nbsp;"adults": 2,<br>
-                    &nbsp;&nbsp;"children": [5, 8]<br>
-                    }
+                    GET /?api=calculate&message=15 temmuz 4 gece 2 yetiskin 1 cocuk
                 </div>
             </div>
         </div>
@@ -299,84 +293,7 @@
         </div>
     </div>
 
-   function parseMessage(text) {
-    text = text.toLowerCase().replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
-    
-    // Tarih bulma
-    let checkin = '', checkout = '';
-    const currentYear = new Date().getFullYear();
-    
-    // Ay isimleri
-    const months = {
-        'haziran': '06', 'temmuz': '07', 'agustos': '08', 
-        'eylul': '09', 'ekim': '10', 'kasim': '11'
-    };
-    
-    // "12 temmuz" formatı
-    const dateMatch = text.match(/(\d{1,2})\s*(haziran|temmuz|agustos|eylul|ekim|kasim)/);
-    if (dateMatch) {
-        const day = dateMatch[1].padStart(2, '0');
-        const month = months[dateMatch[2]];
-        checkin = `${currentYear}-${month}-${day}`;
-    }
-    
-    // Gece sayısı bulma
-    let nights = 5; // default
-    const nightMatch = text.match(/(\d+)\s*(gece|gun)/);
-    if (nightMatch) {
-        nights = parseInt(nightMatch[1]);
-    }
-    
-    // Checkout tarihi hesapla
-    if (checkin) {
-        const checkinDate = new Date(checkin);
-        checkinDate.setDate(checkinDate.getDate() + nights);
-        checkout = checkinDate.toISOString().split('T')[0];
-    }
-    
-    // Yetişkin sayısı
-    let adults = 2; // default
-    const adultMatches = [
-        /(\d+)\s*(yetiskin|yetiskn|adult)/,
-        /(bir|iki|uc|dort|bes)\s*(yetiskin|adult)/,
-        /(\d+)\s*kisil?i?k/
-    ];
-    
-    for (let pattern of adultMatches) {
-        const match = text.match(pattern);
-        if (match) {
-            if (match[1] === 'bir') adults = 1;
-            else if (match[1] === 'iki') adults = 2;
-            else if (match[1] === 'uc') adults = 3;
-            else adults = parseInt(match[1]) || 2;
-            break;
-        }
-    }
-    
-    // Çocuk sayısı ve yaşları
-    let children = [];
-    const childMatches = [
-        /(\d+)\s*(cocuk|cck|child).*?(\d+)\s*yas/,
-        /(\d+)\s*yas.*?(\d+)\s*(cocuk|cck)/,
-        /(\d+)\s*(cocuk|cck)/
-    ];
-    
-    for (let pattern of childMatches) {
-        const match = text.match(pattern);
-        if (match) {
-            if (match[3]) {
-                // Yaş bulundu
-                children = [parseInt(match[3])];
-            } else {
-                // Sadece çocuk sayısı, yaş 5 varsayalım
-                children = [5];
-            }
-            break;
-        }
-    }
-    
-    return { checkin, checkout, adults, children };
-} <script>
+    <script>
         // MESUT HOTEL FİYAT VERİTABANI
         const priceDatabase = {
             "standart": {
@@ -398,38 +315,115 @@
             "3_0": 2.7       // 3 yetişkin
         };
 
-       // API kontrol - sayfa yüklendiğinde hemen çalışsın
-const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.has('api') && urlParams.get('api') === 'calculate') {
-    const message = urlParams.get('message');
-    if (message) {
-        try {
-            const data = parseMessage(message);
-            const result = calculatePriceAPI(data);
+        // Gelişmiş mesaj parse fonksiyonu
+        function parseMessage(text) {
+            text = text.toLowerCase().replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
             
-            const response = `Giriş: ${formatDate(new Date(data.checkin))}
+            // Tarih bulma
+            let checkin = '', checkout = '';
+            const currentYear = new Date().getFullYear();
+            
+            // Ay isimleri
+            const months = {
+                'haziran': '06', 'temmuz': '07', 'agustos': '08', 
+                'eylul': '09', 'ekim': '10', 'kasim': '11'
+            };
+            
+            // "12 temmuz" formatı
+            const dateMatch = text.match(/(\d{1,2})\s*(haziran|temmuz|agustos|eylul|ekim|kasim)/);
+            if (dateMatch) {
+                const day = dateMatch[1].padStart(2, '0');
+                const month = months[dateMatch[2]];
+                checkin = `${currentYear}-${month}-${day}`;
+            }
+            
+            // Gece sayısı bulma
+            let nights = 5; // default
+            const nightMatch = text.match(/(\d+)\s*(gece|gun)/);
+            if (nightMatch) {
+                nights = parseInt(nightMatch[1]);
+            }
+            
+            // Checkout tarihi hesapla
+            if (checkin) {
+                const checkinDate = new Date(checkin);
+                checkinDate.setDate(checkinDate.getDate() + nights);
+                checkout = checkinDate.toISOString().split('T')[0];
+            }
+            
+            // Yetişkin sayısı
+            let adults = 2; // default
+            const adultMatches = [
+                /(\d+)\s*(yetiskin|yetiskn|adult)/,
+                /(bir|iki|uc|dort|bes)\s*(yetiskin|adult)/,
+                /(\d+)\s*kisil?i?k/
+            ];
+            
+            for (let pattern of adultMatches) {
+                const match = text.match(pattern);
+                if (match) {
+                    if (match[1] === 'bir') adults = 1;
+                    else if (match[1] === 'iki') adults = 2;
+                    else if (match[1] === 'uc') adults = 3;
+                    else adults = parseInt(match[1]) || 2;
+                    break;
+                }
+            }
+            
+            // Çocuk sayısı ve yaşları
+            let children = [];
+            const childMatches = [
+                /(\d+)\s*(cocuk|cck|child).*?(\d+)\s*yas/,
+                /(\d+)\s*yas.*?(\d+)\s*(cocuk|cck)/,
+                /(\d+)\s*(cocuk|cck)/
+            ];
+            
+            for (let pattern of childMatches) {
+                const match = text.match(pattern);
+                if (match) {
+                    if (match[3]) {
+                        // Yaş bulundu
+                        children = [parseInt(match[3])];
+                    } else {
+                        // Sadece çocuk sayısı, yaş 5 varsayalım
+                        children = [5];
+                    }
+                    break;
+                }
+            }
+            
+            return { checkin, checkout, adults, children };
+        }
+
+        // API kontrolü - sayfa yüklendiğinde hemen çalışsın
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('api') && urlParams.get('api') === 'calculate') {
+            const message = urlParams.get('message');
+            if (message) {
+                try {
+                    const data = parseMessage(message);
+                    const result = calculatePriceAPI(data);
+                    
+                    const response = `Giriş: ${formatDate(new Date(data.checkin))}
 Çıkış: ${formatDate(new Date(data.checkout))}
 ${result.nights} Gece ${result.nights + 1} Gün
 ${result.adultCount} Yetişkin${result.childAges.length > 0 ? ` + ${result.childAges.length} Çocuk (${result.childAges.join('-')} yaş)` : ''}
 
 Standart Oda - Herşey Dahil
 ${formatPrice(result.results[0].price)}`;
-            
-            document.body.innerHTML = `<pre style="padding: 20px; font-family: Arial; white-space: pre-wrap;">${response}</pre>`;
-        } catch (error) {
-            document.body.innerHTML = `<div style="padding: 20px; color: red;">Hata: ${error.message}</div>`;
+                    
+                    document.body.innerHTML = `<pre style="padding: 20px; font-family: Arial; white-space: pre-wrap;">${response}</pre>`;
+                } catch (error) {
+                    document.body.innerHTML = `<div style="padding: 20px; color: red;">Hata: ${error.message}</div>`;
+                }
+            }
         }
-    }
-}// Sayfa yüklendiğinde bugünün tarihini set et
+
+        // Sayfa yüklendiğinde tarih ayarla
         window.onload = function() {
-            const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 7); // 1 hafta sonrası
-            
-// Test için 14-19 Temmuz (otomatik yıl)
-const currentYear = new Date().getFullYear();
-document.getElementById('checkinDate').value = `${currentYear}-07-14`;
-document.getElementById('checkoutDate').value = `${currentYear}-07-19`;
+            const currentYear = new Date().getFullYear();
+            document.getElementById('checkinDate').value = `${currentYear}-07-14`;
+            document.getElementById('checkoutDate').value = `${currentYear}-07-19`;
             document.getElementById('childCount').value = '1';
             updateChildAges();
             setTimeout(() => {
@@ -469,17 +463,13 @@ document.getElementById('checkoutDate').value = `${currentYear}-07-19`;
 
         function getDailyPrice(date, roomType) {
             const dateStr = date.toISOString().split('T')[0];
-            console.log('Checking date:', dateStr);
             
             for (const [period, price] of Object.entries(priceDatabase[roomType])) {
                 const [startDate, endDate] = period.split('_');
-                console.log(`Period: ${startDate} to ${endDate}, Price: ${price}`);
                 if (dateStr >= startDate && dateStr <= endDate) {
-                    console.log('Found matching price:', price);
                     return price;
                 }
             }
-            console.log('No price found for date:', dateStr);
             return 0;
         }
 
@@ -583,8 +573,6 @@ document.getElementById('checkoutDate').value = `${currentYear}-07-19`;
             const combinationKey = `${finalAdultCount}_${finalChildAges.length}`;
             
             let results = [];
-            let isMultipleRooms = false;
-            let roomCount = 1;
 
             // Çarpan kontrolü
             if (multiplierTable[combinationKey]) {
@@ -612,14 +600,12 @@ document.getElementById('checkoutDate').value = `${currentYear}-07-19`;
                 adultCount: finalAdultCount,
                 childAges: childAges, // Orijinal yaşlar (bebek dahil)
                 finalChildAges,
-                isMultipleRooms,
-                roomCount,
                 results
             };
         }
 
         function displayResults(data) {
-            const { checkinDate, checkoutDate, nights, adultCount, childAges, results, roomCount } = data;
+            const { checkinDate, checkoutDate, nights, adultCount, childAges, results } = data;
             
             // Çocuk yaş string'i oluştur
             let childAgeStr = '';
@@ -656,7 +642,4 @@ document.getElementById('checkoutDate').value = `${currentYear}-07-19`;
         };
     </script>
 </body>
-// API endpoint
-if (window.location.pathname === '/api/calculate') {
-    // API logic burada olacak
-}</html>
+</html>
