@@ -106,7 +106,7 @@ function parsePersonChild(text) {
   match = text.match(re);
   if (match) { personCount = parseTurkishNumber(match[1]); }
 
-  // Çocuk yaşları: "yaşları 5 ve 8", "yaşları: 5,8", "yaşları: 5 ve 8", "5 ve 8 yaş", "5,8 yaş" gibi
+  // Çocuk yaşları: yaşları/yaş/yaşı/yaş: 8, yaşları: 8, 8 yaş, yaşları: 8, 5 ve 8 yaş, 5 yaş gibi her şey!
   let yasRegex = /yaş(?:ları|ı|lar)?[: ]*([\d\s,ve]+)/;
   let yasMatch = text.match(yasRegex);
   if (yasMatch) {
@@ -116,12 +116,14 @@ function parsePersonChild(text) {
       if (!isNaN(a)) childAges.push(a);
     });
   }
-
-  // Ayrıca "5 ve 8 yaş" ve "5,8 yaş" yakala (bağımsız, yukarıdan gelmediyse)
-  let y2 = text.match(/(\d{1,2})\s*[ve,]\s*(\d{1,2})\s*yaş/);
-  if (y2 && childAges.length === 0) {
-    childAges = [parseInt(y2[1]), parseInt(y2[2])];
+  // Ekstra: "8 yaş", "5 yaş" vb. Tekil yaş ifadelerini de yakala!
+  let tekilYasRegex = /(\d{1,2})\s*yaş/g;
+  let m;
+  while ((m = tekilYasRegex.exec(text)) !== null) {
+    childAges.push(parseInt(m[1]));
   }
+  // Çifte eklenirse, tekrarları kaldır
+  childAges = [...new Set(childAges)];
 
   return { personCount, childCount, childAges };
 }
