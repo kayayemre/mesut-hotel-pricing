@@ -327,9 +327,10 @@
             const tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 7); // 1 hafta sonrası
             
-            // Test için 14-19 Temmuz
-            document.getElementById('checkinDate').value = '2024-07-14';
-            document.getElementById('checkoutDate').value = '2024-07-19';
+// Test için 14-19 Temmuz (otomatik yıl)
+const currentYear = new Date().getFullYear();
+document.getElementById('checkinDate').value = `${currentYear}-07-14`;
+document.getElementById('checkoutDate').value = `${currentYear}-07-19`;
             document.getElementById('childCount').value = '1';
             updateChildAges();
             setTimeout(() => {
@@ -556,4 +557,7 @@
         };
     </script>
 </body>
-</html>
+// API endpoint
+if (window.location.pathname === '/api/calculate') {
+    // API logic burada olacak
+}</html>
