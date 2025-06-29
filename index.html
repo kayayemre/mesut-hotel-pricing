@@ -51,4 +51,131 @@
                     <option value="1">1 Yetişkin</option>
                     <option value="2" selected>2 Yetişkin</option>
                     <option value="3">3 Yetişkin</option>
-                    <option val
+                    <option value="4">4 Yetişkin</option>
+                    <option value="5">5 Yetişkin</option>
+                    <option value="6">6 Yetişkin</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>👶 Çocuk Sayısı:</label>
+                <select id="childCount" onchange="updateChildAges()">
+                    <option value="0" selected>Çocuk Yok</option>
+                    <option value="1">1 Çocuk</option>
+                    <option value="2">2 Çocuk</option>
+                    <option value="3">3 Çocuk</option>
+                    <option value="4">4 Çocuk</option>
+                </select>
+            </div>
+            <div class="form-group" id="childAgesGroup" style="display: none;">
+                <label>🎂 Çocuk Yaşları:</label>
+                <div class="child-ages" id="childAges"></div>
+            </div>
+            <button onclick="calculatePrice()">💰 FİYAT HESAPLA</button>
+            <div style="margin-top:32px;font-size:13px;color:#fff;opacity:0.7;">
+                <b>API:</b> https://mesut-hotel-pricing.vercel.app/api/calculate<br>
+                <span>GET: checkin, checkout, adults, childAges (virgülle)</span>
+            </div>
+        </div>
+        <!-- Sonuçlar Paneli -->
+        <div class="card results-panel">
+            <h1>💎 Fiyat Teklifleri</h1>
+            <div class="results" id="results">
+                <div style="text-align: center; padding: 50px; opacity: 0.7;">
+                    <h3>Fiyat hesaplaması için sol panelden bilgileri girin</h3>
+                    <p>Tarih, kişi sayısı ve çocuk yaşlarını girip "Fiyat Hesapla" butonuna basın</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const API_URL = "https://mesut-hotel-pricing.vercel.app/api/calculate";
+        window.onload = function() {
+            const currentYear = new Date().getFullYear();
+            document.getElementById('checkinDate').value = `${currentYear}-07-14`;
+            document.getElementById('checkoutDate').value = `${currentYear}-07-19`;
+            document.getElementById('childCount').value = '1';
+            updateChildAges();
+            setTimeout(() => {
+                const c = document.getElementById('childAge0');
+                if (c) c.value = '5';
+            }, 100);
+        };
+        function updateChildAges() {
+            const childCount = parseInt(document.getElementById('childCount').value);
+            const childAgesGroup = document.getElementById('childAgesGroup');
+            const childAgesContainer = document.getElementById('childAges');
+            if (childCount === 0) { childAgesGroup.style.display = 'none'; childAgesContainer.innerHTML = ''; return; }
+            childAgesGroup.style.display = 'block'; childAgesContainer.innerHTML = '';
+            for (let i = 0; i < childCount; i++) {
+                const input = document.createElement('input');
+                input.type = 'number'; input.min = '0'; input.max = '17';
+                input.placeholder = `${i + 1}. çocuk`; input.id = `childAge${i}`; input.required = true;
+                childAgesContainer.appendChild(input);
+            }
+        }
+        function displayResults(data) {
+            const { nights, finalAdultCount, childCount, childAges, price, roomType, concept } = data;
+            let childAgeStr = (childAges && childAges.length > 0) ? ` + ${childCount} Çocuk (${childAges.join('-')} yaş)` : '';
+            const today = new Date(document.getElementById('checkinDate').value);
+            const outday = new Date(document.getElementById('checkoutDate').value);
+            function formatDate(d) {
+                const months = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+                const days = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+                return `${d.getDate()} ${months[d.getMonth()]} ${days[d.getDay()]}`;
+            }
+            document.getElementById('results').innerHTML = `
+                <div class="result-header">
+                    <h3>📅 ${formatDate(today)} - ${formatDate(outday)}</h3>
+                    <p><strong>${nights} Gece ${nights + 1} Gün</strong></p>
+                    <p><strong>${finalAdultCount} Yetişkin${childAgeStr}</strong></p>
+                </div>
+                <div class="price-option">
+                    <h4>${roomType} - ${concept}</h4>
+                    <div class="price">${price.toLocaleString('tr-TR')} TL</div>
+                </div>
+            `;
+        }
+        async function calculatePrice() {
+            const checkin = document.getElementById('checkinDate').value;
+            const checkout = document.getElementById('checkoutDate').value;
+            const adults = document.getElementById('adultCount').value;
+            const childCount = parseInt(document.getElementById('childCount').value);
+            const childAges = [];
+            for (let i = 0; i < childCount; i++) {
+                const v = document.getElementById(`childAge${i}`).value;
+                if (v === "" || isNaN(v) || v < 0 || v > 17) {
+                    alert(`${i+1}. çocuğun yaşını doğru girin! (0-17)`);
+                    return;
+                }
+                childAges.push(Number(v));
+            }
+            if (!checkin || !checkout) { alert("Lütfen giriş ve çıkış tarihlerini girin!"); return; }
+            if (new Date(checkin) >= new Date(checkout)) { alert("Çıkış tarihi, girişten sonra olmalı!"); return; }
+            document.getElementById('results').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Fiyatlar hesaplanıyor...</p>
+                </div>
+            `;
+            try {
+                const params = new URLSearchParams({
+                    checkin, checkout, adults, childAges: childAges.join(',')
+                });
+                const response = await fetch(`${API_URL}?${params}`);
+                const data = await response.json();
+                if (!response.ok) {
+                    document.getElementById('results').innerHTML = `
+                        <div class="error"><b>Hata:</b> ${data.error || "Bir hata oluştu."}</div>
+                    `;
+                    return;
+                }
+                displayResults(data);
+            } catch (err) {
+                document.getElementById('results').innerHTML = `
+                    <div class="error"><b>Hata:</b> API bağlantısı kurulamadı.</div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
