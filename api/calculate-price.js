@@ -140,9 +140,42 @@ function getDailyPrice(date) {
   return 0;
 }
 
+function formatPrice(price) {
+  return new Intl.NumberFormat("tr-TR").format(price) + " TL";
+}
+
+function formatDateTR(date) {
+  const gunler = ["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
+  const aylar = [
+    "Ocak","Şubat","Mart","Nisan","Mayıs","Haziran",
+    "Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"
+  ];
+  if (!(date instanceof Date)) date = new Date(date);
+  const gun = date.getDate();
+  const ay = aylar[date.getMonth()];
+  const yil = date.getFullYear();
+  const gunAdi = gunler[date.getDay()];
+  return `${gun} ${ay} ${yil} ${gunAdi}`;
+}
+function getCheckoutDate(checkin, nights) {
+  let d = new Date(checkin);
+  d.setDate(d.getDate() + nights);
+  return d;
+}
+
+function infoString(nights, adults, children, childrenAges) {
+  // 4 Gece 5 Gün 3 Yetişkin + 2 Çocuk (11, 7 Yaş)
+  let adultsStr = `${adults} Yetişkin`;
+  let childStr = children > 0 ? ` + ${children} Çocuk` : "";
+  let agesStr = childrenAges.length > 0 ? ` (${childrenAges.join(", ")} Yaş)` : "";
+  let totalDays = nights + 1;
+  return `${nights} Gece ${totalDays} Gün ${adultsStr}${childStr}${agesStr}`;
+}
+
 function calculatePrice(startDate, nightCount, adults, childrenAges) {
   let totalAdults = adults;
   let validChildAges = [];
+  // 13 yaşından büyük çocukları yetişkin say!
   childrenAges.forEach(yas => {
     if (yas >= 13) totalAdults++;
     else if (yas >= 2) validChildAges.push(yas);
@@ -162,9 +195,10 @@ function calculatePrice(startDate, nightCount, adults, childrenAges) {
     nights: nightCount,
     totalAdults,
     totalChildren: validChildAges.length,
-    childrenAges,
+    childrenAges: validChildAges, // Sadece 2-12 yaş arası çocukları göster
     price: finalPrice,
-    info: `${nightCount} gece, ${totalAdults} yetişkin, ${validChildAges.length} çocuk`
+    formattedPrice: formatPrice(finalPrice),
+    info: infoString(nightCount, totalAdults, validChildAges.length, validChildAges)
   };
 }
 
@@ -207,27 +241,6 @@ function analyzeMessage(raw, session = {}) {
   };
 }
 
-// --- YENİ: Türkçe tarih ve checkout fonksiyonu
-function formatDateTR(date) {
-  const gunler = ["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
-  const aylar = [
-    "Ocak","Şubat","Mart","Nisan","Mayıs","Haziran",
-    "Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"
-  ];
-  if (!(date instanceof Date)) date = new Date(date);
-  const gun = date.getDate();
-  const ay = aylar[date.getMonth()];
-  const yil = date.getFullYear();
-  const gunAdi = gunler[date.getDay()];
-  return `${gun} ${ay} ${yil} ${gunAdi}`;
-}
-function getCheckoutDate(checkin, nights) {
-  let d = new Date(checkin);
-  d.setDate(d.getDate() + nights);
-  return d;
-}
-
-// --- HANDLER ---
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({error:"POST kullanın"});
   let { message, sessionId, context } = req.body;
@@ -260,13 +273,14 @@ export default async function handler(req, res) {
   const checkoutDate = getCheckoutDate(analyze.checkin, hesap.nights);
   res.status(200).json({
     completed: true,
-    checkin: formatDateTR(analyze.checkin),          // "14 Temmuz 2025 Pazartesi"
-    checkout: formatDateTR(checkoutDate),            // "18 Temmuz 2025 Cuma"
-    nights: hesap.nights,                            // 4
-    adults: hesap.totalAdults,                       // 2
-    children: hesap.totalChildren,                   // 1
-    childrenAges: hesap.childrenAges,                // [8]
-    price: hesap.price,                              // 25400
+    checkin: formatDateTR(analyze.checkin),
+    checkout: formatDateTR(checkoutDate),
+    nights: hesap.nights,
+    adults: hesap.totalAdults,
+    children: hesap.totalChildren,
+    childrenAges: hesap.childrenAges,
+    price: hesap.price,
+    formattedPrice: hesap.formattedPrice,
     info: hesap.info,
     session: sessionStore[sessionId]
   });
