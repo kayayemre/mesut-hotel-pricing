@@ -299,7 +299,84 @@
         </div>
     </div>
 
-    <script>
+   function parseMessage(text) {
+    text = text.toLowerCase().replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
+    
+    // Tarih bulma
+    let checkin = '', checkout = '';
+    const currentYear = new Date().getFullYear();
+    
+    // Ay isimleri
+    const months = {
+        'haziran': '06', 'temmuz': '07', 'agustos': '08', 
+        'eylul': '09', 'ekim': '10', 'kasim': '11'
+    };
+    
+    // "12 temmuz" formatı
+    const dateMatch = text.match(/(\d{1,2})\s*(haziran|temmuz|agustos|eylul|ekim|kasim)/);
+    if (dateMatch) {
+        const day = dateMatch[1].padStart(2, '0');
+        const month = months[dateMatch[2]];
+        checkin = `${currentYear}-${month}-${day}`;
+    }
+    
+    // Gece sayısı bulma
+    let nights = 5; // default
+    const nightMatch = text.match(/(\d+)\s*(gece|gun)/);
+    if (nightMatch) {
+        nights = parseInt(nightMatch[1]);
+    }
+    
+    // Checkout tarihi hesapla
+    if (checkin) {
+        const checkinDate = new Date(checkin);
+        checkinDate.setDate(checkinDate.getDate() + nights);
+        checkout = checkinDate.toISOString().split('T')[0];
+    }
+    
+    // Yetişkin sayısı
+    let adults = 2; // default
+    const adultMatches = [
+        /(\d+)\s*(yetiskin|yetiskn|adult)/,
+        /(bir|iki|uc|dort|bes)\s*(yetiskin|adult)/,
+        /(\d+)\s*kisil?i?k/
+    ];
+    
+    for (let pattern of adultMatches) {
+        const match = text.match(pattern);
+        if (match) {
+            if (match[1] === 'bir') adults = 1;
+            else if (match[1] === 'iki') adults = 2;
+            else if (match[1] === 'uc') adults = 3;
+            else adults = parseInt(match[1]) || 2;
+            break;
+        }
+    }
+    
+    // Çocuk sayısı ve yaşları
+    let children = [];
+    const childMatches = [
+        /(\d+)\s*(cocuk|cck|child).*?(\d+)\s*yas/,
+        /(\d+)\s*yas.*?(\d+)\s*(cocuk|cck)/,
+        /(\d+)\s*(cocuk|cck)/
+    ];
+    
+    for (let pattern of childMatches) {
+        const match = text.match(pattern);
+        if (match) {
+            if (match[3]) {
+                // Yaş bulundu
+                children = [parseInt(match[3])];
+            } else {
+                // Sadece çocuk sayısı, yaş 5 varsayalım
+                children = [5];
+            }
+            break;
+        }
+    }
+    
+    return { checkin, checkout, adults, children };
+} <script>
         // MESUT HOTEL FİYAT VERİTABANI
         const priceDatabase = {
             "standart": {
