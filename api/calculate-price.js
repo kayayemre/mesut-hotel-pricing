@@ -170,32 +170,39 @@ function calculatePrice(startDate, nightCount, adults, childrenAges) {
 
 function analyzeMessage(raw, session = {}) {
   let text = (raw || "").toLocaleLowerCase("tr");
-  let checkin = session.checkin || parseDateFromText(text);
-  let nightCount = session.nightCount || parseNightCount(text);
-  let personInfo = parsePersonChild(text);
-  let adults = session.adults || personInfo.personCount;
-  let children = session.children || personInfo.childCount;
-  let childrenAges = session.childrenAges || personInfo.childAges || [];
+  
+  // Çok satırlı veya birleşik mesajlar için, satır satır gez
+  let lines = text.split("\n").map(x => x.trim()).filter(Boolean);
 
-  // Giriş-çıkış tarihi aralığı ise:
-  let re = /(\d{1,2})[\s\.-]*(\d{1,2})[\s\.-]*(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık)/;
-  let match = text.match(re);
-  if (match) {
-    let gun1 = parseInt(match[1]), gun2 = parseInt(match[2]);
-    let ay = months.indexOf(match[3])+1;
-    let yil = new Date().getFullYear();
-    if (ay < (new Date().getMonth()+1)) yil++;
-    checkin = new Date(`${yil}-${String(ay).padStart(2,"0")}-${String(gun1).padStart(2,"0")}`);
-    let checkout = new Date(`${yil}-${String(ay).padStart(2,"0")}-${String(gun2).padStart(2,"0")}`);
-    nightCount = getNightCount(checkin, checkout);
+  let checkin, nightCount, adults, children, childrenAges = [];
+  
+  for (let line of lines) {
+    let pi = parsePersonChild(line);
+    let co = parseDateFromText(line);
+    let nc = parseNightCount(line);
+    if (co) checkin = co;
+    if (typeof pi.personCount === 'number') adults = pi.personCount;
+    if (typeof pi.childCount === 'number') children = pi.childCount;
+    if (pi.childAges && pi.childAges.length > 0) childrenAges = pi.childAges;
+    if (nc) nightCount = nc;
+    let re = /(\d{1,2})[\s\.-]*(\d{1,2})[\s\.-]*(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık)/;
+    let match = line.match(re);
+    if (match) {
+      let gun1 = parseInt(match[1]), gun2 = parseInt(match[2]);
+      let ay = months.indexOf(match[3])+1;
+      let yil = new Date().getFullYear();
+      if (ay < (new Date().getMonth()+1)) yil++;
+      checkin = new Date(`${yil}-${String(ay).padStart(2,"0")}-${String(gun1).padStart(2,"0")}`);
+      let checkout = new Date(`${yil}-${String(ay).padStart(2,"0")}-${String(gun2).padStart(2,"0")}`);
+      nightCount = getNightCount(checkin, checkout);
+    }
   }
 
-  // --- EKSİK ALANLARI DOĞRU KONTROL ET ---
+  // Eksik bilgi kontrolü
   let missing = [];
   if (!checkin) missing.push("giriş tarihi");
   if (!nightCount) missing.push("gece sayısı");
   if (!adults) missing.push("yetişkin sayısı");
-  // Çocuk sayısı > 0 ise ve yaş(lar)ı eksikse, eksik sayıda çocuk yaşını da ekle
   if (children > 0 && (!childrenAges || childrenAges.length < children)) missing.push("çocuk yaş(ları)");
 
   return {
@@ -208,6 +215,7 @@ function analyzeMessage(raw, session = {}) {
     missing
   };
 }
+
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({error:"POST kullanın"});
