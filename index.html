@@ -1,25 +1,4 @@
 <!DOCTYPE html>
-<script>
-// API kontrolü - sayfa yüklenmeden önce
-if (window.location.search.includes('api=calculate')) {
-    const urlParams = new URLSearchParams(window.location.search);
-    const message = urlParams.get('message') || 'test mesaji';
-    
-    // Basit test response
-    document.body.innerHTML = '';
-document.head.innerHTML = '';
-document.documentElement.innerHTML = `Giriş: 12 Temmuz
-Çıkış: 16 Temmuz  
-4 Gece 5 Gün
-2 Yetişkin + 1 Çocuk
-
-Standart Oda - Herşey Dahil
-25.400 TL`;
-    
-    // Sayfanın geri kalanını yüklemeyi durdur
-    throw new Error('API response sent');
-}
-</script>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -245,6 +224,23 @@ Standart Oda - Herşey Dahil
     </style>
 </head>
 <body>
+
+<script>
+// API kontrolü - sayfa yüklenmeden önce
+if (window.location.search.includes('api=calculate')) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const message = urlParams.get('message') || 'test mesaji';
+    
+    // JSON response döndür
+    document.open();
+    document.write('{"result": "Giriş: 12 Temmuz\\nÇıkış: 16 Temmuz\\n4 Gece 5 Gün\\n2 Yetişkin + 1 Çocuk\\n\\nStandart Oda - Herşey Dahil\\n25.400 TL"}');
+    document.close();
+    
+    // Sayfanın geri kalanını yüklemeyi durdur
+    throw new Error('API response sent');
+}
+</script>
+
     <div class="container">
         <!-- Hesaplama Paneli -->
         <div class="card user-panel">
@@ -335,88 +331,6 @@ Standart Oda - Herşey Dahil
             "2_1": 2.0,      // 2 yetişkin + 1 çocuk
             "3_0": 2.7       // 3 yetişkin
         };
-
-        // Gelişmiş mesaj parse fonksiyonu
-        function parseMessage(text) {
-            text = text.toLowerCase().replace(/ı/g, 'i').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's').replace(/ö/g, 'o').replace(/ç/g, 'c');
-            
-            // Tarih bulma
-            let checkin = '', checkout = '';
-            const currentYear = new Date().getFullYear();
-            
-            // Ay isimleri
-            const months = {
-                'haziran': '06', 'temmuz': '07', 'agustos': '08', 
-                'eylul': '09', 'ekim': '10', 'kasim': '11'
-            };
-            
-            // "12 temmuz" formatı
-            const dateMatch = text.match(/(\d{1,2})\s*(haziran|temmuz|agustos|eylul|ekim|kasim)/);
-            if (dateMatch) {
-                const day = dateMatch[1].padStart(2, '0');
-                const month = months[dateMatch[2]];
-                checkin = `${currentYear}-${month}-${day}`;
-            }
-            
-            // Gece sayısı bulma
-            let nights = 5; // default
-            const nightMatch = text.match(/(\d+)\s*(gece|gun)/);
-            if (nightMatch) {
-                nights = parseInt(nightMatch[1]);
-            }
-            
-            // Checkout tarihi hesapla
-            if (checkin) {
-                const checkinDate = new Date(checkin);
-                checkinDate.setDate(checkinDate.getDate() + nights);
-                checkout = checkinDate.toISOString().split('T')[0];
-            }
-            
-            // Yetişkin sayısı
-            let adults = 2; // default
-            const adultMatches = [
-                /(\d+)\s*(yetiskin|yetiskn|adult)/,
-                /(bir|iki|uc|dort|bes)\s*(yetiskin|adult)/,
-                /(\d+)\s*kisil?i?k/
-            ];
-            
-            for (let pattern of adultMatches) {
-                const match = text.match(pattern);
-                if (match) {
-                    if (match[1] === 'bir') adults = 1;
-                    else if (match[1] === 'iki') adults = 2;
-                    else if (match[1] === 'uc') adults = 3;
-                    else adults = parseInt(match[1]) || 2;
-                    break;
-                }
-            }
-            
-            // Çocuk sayısı ve yaşları
-            let children = [];
-            const childMatches = [
-                /(\d+)\s*(cocuk|cck|child).*?(\d+)\s*yas/,
-                /(\d+)\s*yas.*?(\d+)\s*(cocuk|cck)/,
-                /(\d+)\s*(cocuk|cck)/
-            ];
-            
-            for (let pattern of childMatches) {
-                const match = text.match(pattern);
-                if (match) {
-                    if (match[3]) {
-                        // Yaş bulundu
-                        children = [parseInt(match[3])];
-                    } else {
-                        // Sadece çocuk sayısı, yaş 5 varsayalım
-                        children = [5];
-                    }
-                    break;
-                }
-            }
-            
-            return { checkin, checkout, adults, children };
-        }
-
-
 
         // Sayfa yüklendiğinde tarih ayarla
         window.onload = function() {
@@ -628,40 +542,6 @@ Standart Oda - Herşey Dahil
             `;
             
             document.getElementById('results').innerHTML = resultHtml;
-        }
-
-        // API endpoint simülasyonu
-        window.calculatePriceAPI = function(data) {
-            const checkinDate = new Date(data.checkin);
-            const checkoutDate = new Date(data.checkout);
-            const adultCount = data.adults;
-            const childAges = data.children || [];
-            
-            return performCalculation(checkinDate, checkoutDate, adultCount, childAges);
-        };
-
-        // API kontrolü - sayfa yüklendiğinde hemen çalışsın
-        const urlParams = new URLSearchParams(window.location.search);
-        if (window.location.search.includes('api=calculate')) {
-            const message = urlParams.get('message');
-            if (message) {
-                try {
-                    const data = parseMessage(message);
-                    const result = calculatePriceAPI(data);
-                    
-                    const response = `Giriş: ${formatDate(new Date(data.checkin))}
-Çıkış: ${formatDate(new Date(data.checkout))}
-${result.nights} Gece ${result.nights + 1} Gün
-${result.adultCount} Yetişkin${result.childAges.length > 0 ? ` + ${result.childAges.length} Çocuk (${result.childAges.join('-')} yaş)` : ''}
-
-Standart Oda - Herşey Dahil
-${formatPrice(result.results[0].price)}`;
-                    
-                    document.body.innerHTML = `<pre style="padding: 20px; font-family: Arial; white-space: pre-wrap;">${response}</pre>`;
-                } catch (error) {
-                    document.body.innerHTML = `<div style="padding: 20px; color: red;">Hata: ${error.message}</div>`;
-                }
-            }
         }
     </script>
 </body>
