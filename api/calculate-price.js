@@ -253,7 +253,7 @@ export default async function handler(req, res) {
   if (!analyze.completed) {
     return res.status(200).json({
       completed: false,
-      missing: analyze.missing,
+      missing: analyze.missing.join(", "),
       session: sessionStore[sessionId],
       message: `Lütfen eksik bilgileri girin: ${analyze.missing.join(", ")}`
     });
