@@ -398,12 +398,27 @@
             "3_0": 2.7       // 3 yetişkin
         };
 
-        // API kontrol - sayfa yüklendiğinde hemen çalışsın
+       // API kontrol - sayfa yüklendiğinde hemen çalışsın
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.has('api') && urlParams.get('api') === 'calculate') {
     const message = urlParams.get('message');
     if (message) {
-        document.body.innerHTML = '<div style="padding: 20px; font-family: Arial;"><h1>API Test</h1><p>Mesaj: ' + message + '</p></div>';
+        try {
+            const data = parseMessage(message);
+            const result = calculatePriceAPI(data);
+            
+            const response = `Giriş: ${formatDate(new Date(data.checkin))}
+Çıkış: ${formatDate(new Date(data.checkout))}
+${result.nights} Gece ${result.nights + 1} Gün
+${result.adultCount} Yetişkin${result.childAges.length > 0 ? ` + ${result.childAges.length} Çocuk (${result.childAges.join('-')} yaş)` : ''}
+
+Standart Oda - Herşey Dahil
+${formatPrice(result.results[0].price)}`;
+            
+            document.body.innerHTML = `<pre style="padding: 20px; font-family: Arial; white-space: pre-wrap;">${response}</pre>`;
+        } catch (error) {
+            document.body.innerHTML = `<div style="padding: 20px; color: red;">Hata: ${error.message}</div>`;
+        }
     }
 }// Sayfa yüklendiğinde bugünün tarihini set et
         window.onload = function() {
