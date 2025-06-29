@@ -6,13 +6,15 @@ if (window.location.search.includes('api=calculate')) {
     const message = urlParams.get('message') || 'test mesaji';
     
     // Basit test response
-    document.write(`Giriş: 12 Temmuz
+    document.body.innerHTML = '';
+document.head.innerHTML = '';
+document.documentElement.innerHTML = `Giriş: 12 Temmuz
 Çıkış: 16 Temmuz  
 4 Gece 5 Gün
 2 Yetişkin + 1 Çocuk
 
 Standart Oda - Herşey Dahil
-25.400 TL`);
+25.400 TL`;
     
     // Sayfanın geri kalanını yüklemeyi durdur
     throw new Error('API response sent');
