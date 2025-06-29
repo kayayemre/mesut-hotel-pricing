@@ -16,7 +16,6 @@ const turkishNumbers = {
   "bir": 1, "iki": 2, "üç": 3, "dört": 4, "beş": 5, "altı": 6,
   "yedi": 7, "sekiz": 8, "dokuz": 9, "on": 10, "sıfır": 0
 };
-
 const months = [
   "ocak","şubat","mart","nisan","mayıs","haziran",
   "temmuz","ağustos","eylül","ekim","kasım","aralık"
@@ -31,7 +30,6 @@ function parseTurkishNumber(word) {
 function parseDateFromText(text, today = new Date()) {
   text = text.toLocaleLowerCase("tr");
   let date = null;
-
   let re = /(\d{1,2})[\s\.]*(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık)/;
   let match = text.match(re);
   if (match) {
@@ -42,13 +40,8 @@ function parseDateFromText(text, today = new Date()) {
     date = new Date(`${yil}-${String(ay).padStart(2,"0")}-${String(gun).padStart(2,"0")}`);
     return date;
   }
-
-  if (text.includes("yarın")) {
-    date = new Date(today); date.setDate(today.getDate()+1); return date;
-  }
-  if (text.includes("bugün")) {
-    date = new Date(today); return date;
-  }
+  if (text.includes("yarın")) { date = new Date(today); date.setDate(today.getDate()+1); return date; }
+  if (text.includes("bugün")) { date = new Date(today); return date; }
   let daysOfWeek = ["pazar","pazartesi","salı","çarşamba","perşembe","cuma","cumartesi"];
   let foundDow = daysOfWeek.find(d => text.includes(d));
   if (foundDow) {
@@ -59,7 +52,6 @@ function parseDateFromText(text, today = new Date()) {
     date = new Date(today); date.setDate(today.getDate()+diff);
     return date;
   }
-
   re = /(\d{1,2})[' ]?inde/;
   match = text.match(re);
   if (match) {
@@ -70,7 +62,6 @@ function parseDateFromText(text, today = new Date()) {
     date = new Date(`${yil}-${String(ay).padStart(2,"0")}-${String(gun).padStart(2,"0")}`);
     return date;
   }
-
   return null;
 }
 
@@ -106,7 +97,7 @@ function parsePersonChild(text) {
   match = text.match(re);
   if (match) { personCount = parseTurkishNumber(match[1]); }
 
-  // Çocuk yaşları: yaşları/yaş/yaşı/yaş: 8, yaşları: 8, 8 yaş, yaşları: 8, 5 ve 8 yaş, 5 yaş gibi her şey!
+  // Çocuk yaşları: "yaşları 5 ve 8", "yaşları: 5,8", "yaşları: 5 ve 8", "5 ve 8 yaş", "5,8 yaş" gibi
   let yasRegex = /yaş(?:ları|ı|lar)?[: ]*([\d\s,ve]+)/;
   let yasMatch = text.match(yasRegex);
   if (yasMatch) {
@@ -116,14 +107,11 @@ function parsePersonChild(text) {
       if (!isNaN(a)) childAges.push(a);
     });
   }
-  // Ekstra: "8 yaş", "5 yaş" vb. Tekil yaş ifadelerini de yakala!
-  let tekilYasRegex = /(\d{1,2})\s*yaş/g;
-  let m;
-  while ((m = tekilYasRegex.exec(text)) !== null) {
-    childAges.push(parseInt(m[1]));
+  // Ayrıca "5 ve 8 yaş" ve "5,8 yaş" yakala (bağımsız, yukarıdan gelmediyse)
+  let y2 = text.match(/(\d{1,2})\s*[ve,]\s*(\d{1,2})\s*yaş/);
+  if (y2 && childAges.length === 0) {
+    childAges = [parseInt(y2[1]), parseInt(y2[2])];
   }
-  // Çifte eklenirse, tekrarları kaldır
-  childAges = [...new Set(childAges)];
 
   return { personCount, childCount, childAges };
 }
@@ -140,42 +128,20 @@ function getDailyPrice(date) {
   return 0;
 }
 
-function formatPrice(price) {
-  return new Intl.NumberFormat("tr-TR").format(price) + " TL";
-}
-
-function formatDateTR(date) {
-  const gunler = ["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
-  const aylar = [
-    "Ocak","Şubat","Mart","Nisan","Mayıs","Haziran",
-    "Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"
-  ];
+function formatDateVerbose(date) {
   if (!(date instanceof Date)) date = new Date(date);
-  const gun = date.getDate();
-  const ay = aylar[date.getMonth()];
-  const yil = date.getFullYear();
-  const gunAdi = gunler[date.getDay()];
-  return `${gun} ${ay} ${yil} ${gunAdi}`;
-}
-function getCheckoutDate(checkin, nights) {
-  let d = new Date(checkin);
-  d.setDate(d.getDate() + nights);
-  return d;
+  const days = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+  const monthsStr = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran','Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+  return `${date.getDate()} ${monthsStr[date.getMonth()]} ${days[date.getDay()]}`;
 }
 
-function infoString(nights, adults, children, childrenAges) {
-  // 4 Gece 5 Gün 3 Yetişkin + 2 Çocuk (11, 7 Yaş)
-  let adultsStr = `${adults} Yetişkin`;
-  let childStr = children > 0 ? ` + ${children} Çocuk` : "";
-  let agesStr = childrenAges.length > 0 ? ` (${childrenAges.join(", ")} Yaş)` : "";
-  let totalDays = nights + 1;
-  return `${nights} Gece ${totalDays} Gün ${adultsStr}${childStr}${agesStr}`;
+function formatPrice(price) {
+  return price.toLocaleString('tr-TR') + ' TL';
 }
 
 function calculatePrice(startDate, nightCount, adults, childrenAges) {
   let totalAdults = adults;
   let validChildAges = [];
-  // 13 yaşından büyük çocukları yetişkin say!
   childrenAges.forEach(yas => {
     if (yas >= 13) totalAdults++;
     else if (yas >= 2) validChildAges.push(yas);
@@ -195,10 +161,10 @@ function calculatePrice(startDate, nightCount, adults, childrenAges) {
     nights: nightCount,
     totalAdults,
     totalChildren: validChildAges.length,
-    childrenAges: validChildAges, // Sadece 2-12 yaş arası çocukları göster
+    childrenAges: validChildAges,
     price: finalPrice,
     formattedPrice: formatPrice(finalPrice),
-    info: infoString(nightCount, totalAdults, validChildAges.length, validChildAges)
+    info: `${nightCount} Gece ${nightCount+1} Gün ${totalAdults} Yetişkin${validChildAges.length > 0 ? ` + ${validChildAges.length} Çocuk (${validChildAges.join(", ")} Yaş)` : ""}`
   };
 }
 
@@ -211,20 +177,26 @@ function analyzeMessage(raw, session = {}) {
   let children = session.children || personInfo.childCount;
   let childrenAges = session.childrenAges || personInfo.childAges || [];
 
-  let re = /(\d{1,2})[\s\.]*-(\d{1,2})[\s\.]*(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık)/;
+  // Giriş-çıkış tarihi aralığı ise:
+  let re = /(\d{1,2})[\s\.-]*(\d{1,2})[\s\.-]*(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık)/;
   let match = text.match(re);
   if (match) {
-    let gun1 = parseInt(match[1]), gun2 = parseInt(match[2]), ay = months.indexOf(match[3])+1, yil = new Date().getFullYear();
+    let gun1 = parseInt(match[1]), gun2 = parseInt(match[2]);
+    let ay = months.indexOf(match[3])+1;
+    let yil = new Date().getFullYear();
     if (ay < (new Date().getMonth()+1)) yil++;
     checkin = new Date(`${yil}-${String(ay).padStart(2,"0")}-${String(gun1).padStart(2,"0")}`);
     let checkout = new Date(`${yil}-${String(ay).padStart(2,"0")}-${String(gun2).padStart(2,"0")}`);
     nightCount = getNightCount(checkin, checkout);
   }
 
-  if (!nightCount) nightCount = session.nightCount;
-  if (!adults) adults = session.adults;
-  if (!children) children = session.children;
-  if (!childrenAges.length && session.childrenAges) childrenAges = session.childrenAges;
+  // --- EKSİK ALANLARI DOĞRU KONTROL ET ---
+  let missing = [];
+  if (!checkin) missing.push("giriş tarihi");
+  if (!nightCount) missing.push("gece sayısı");
+  if (!adults) missing.push("yetişkin sayısı");
+  // Çocuk sayısı > 0 ise ve yaş(lar)ı eksikse, eksik sayıda çocuk yaşını da ekle
+  if (children > 0 && (!childrenAges || childrenAges.length < children)) missing.push("çocuk yaş(ları)");
 
   return {
     checkin,
@@ -232,18 +204,14 @@ function analyzeMessage(raw, session = {}) {
     adults,
     children,
     childrenAges,
-    completed: !!(checkin && nightCount && adults),
-    missing: [
-      !checkin ? "giriş tarihi" : null,
-      !nightCount ? "gece sayısı" : null,
-      !adults ? "yetişkin sayısı" : null
-    ].filter(Boolean)
+    completed: !(missing.length > 0),
+    missing
   };
 }
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({error:"POST kullanın"});
-  let { message, sessionId, context } = req.body;
+  let { message, sessionId } = req.body;
   if (!sessionId) sessionId = "global";
   if (!sessionStore[sessionId]) sessionStore[sessionId] = {};
 
@@ -255,10 +223,11 @@ export default async function handler(req, res) {
       completed: false,
       missing: analyze.missing.join(", "),
       session: sessionStore[sessionId],
-      message: `Lütfen eksik bilgileri girin: ${analyze.missing.join(", ")}`
+      message: `Lütfen ${analyze.missing.join(", ")} bilgisini de paylaşır mısınız?`
     });
   }
 
+  // Fiyatı hesapla
   let hesap = calculatePrice(
     analyze.checkin,
     analyze.nightCount,
@@ -269,12 +238,16 @@ export default async function handler(req, res) {
     return res.status(200).json({ completed: true, error: hesap.error });
   }
 
-  // Türkçe insan gibi checkin/checkout, teknik alanlarla birlikte dön
-  const checkoutDate = getCheckoutDate(analyze.checkin, hesap.nights);
+  // Çıkış tarihi
+  let checkoutDate = new Date(analyze.checkin);
+  checkoutDate.setDate(checkoutDate.getDate() + hesap.nights);
+  let checkinVerbose = formatDateVerbose(analyze.checkin);
+  let checkoutVerbose = formatDateVerbose(checkoutDate);
+
   res.status(200).json({
     completed: true,
-    checkin: formatDateTR(analyze.checkin),
-    checkout: formatDateTR(checkoutDate),
+    checkin: checkinVerbose,
+    checkout: checkoutVerbose,
     nights: hesap.nights,
     adults: hesap.totalAdults,
     children: hesap.totalChildren,
