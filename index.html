@@ -621,7 +621,7 @@
 
         // API kontrolü - sayfa yüklendiğinde hemen çalışsın
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('api') && urlParams.get('api') === 'calculate') {
+        if (window.location.search.includes('api=calculate')) {
             const message = urlParams.get('message');
             if (message) {
                 try {
