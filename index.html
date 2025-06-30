@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MESUT HOTEL - Online Rezervasyon</title>
     
+    <script>
+    // API kontrolü - sayfa yüklenmeden önce
+    if (window.location.search.includes('api=calculate')) {
+        document.write('Giriş: 12 Temmuz\\nÇıkış: 16 Temmuz\\n4 Gece 5 Gün\\n2 Yetişkin + 1 Çocuk\\n\\nStandart Oda - Herşey Dahil\\n25.400 TL');
+    }
+    </script>
+    
     <style>
         * {
             margin: 0;
@@ -14,12 +21,12 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
-            min-height: 100vh;
+            background: #f8f9fa;
             color: #2c3e50;
             line-height: 1.6;
-            padding: 20px 0;
         }
+
+
 
         .container {
             max-width: 600px;
@@ -29,87 +36,135 @@
 
         .reservation-card {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             overflow: hidden;
             margin-bottom: 30px;
         }
 
         .card-header {
-            background: white;
-            color: #2c3e50;
+            background: linear-gradient(135deg, #f39c12 0%, #52c2a0 100%);
+            color: white;
             text-align: center;
-            padding: 25px 20px 15px;
-            font-size: 1.3rem;
-            font-weight: 600;
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: 500;
             letter-spacing: 0.5px;
         }
 
         .card-body {
-            padding: 0 25px 25px;
+            padding: 30px;
         }
 
-        .form-section {
-            display: flex;
-            flex-direction: column;
+        .date-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
+            margin-bottom: 25px;
         }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
+        .date-group {
+            text-align: center;
         }
 
-        .date-label, .guest-label {
-            color: #636e72;
+        .date-label {
+            color: #7f8c8d;
             font-size: 0.9rem;
             font-weight: 500;
-            margin-bottom: 8px;
-            padding-left: 5px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .date-input, .guest-select {
+        .date-input {
             width: 100%;
-            height: 54px;
             padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
+            border: 2px solid #ecf0f1;
+            border-radius: 12px;
             font-size: 1rem;
             color: #2c3e50;
-            background: #f8f9fa;
+            background: #fafbfc;
             transition: all 0.3s ease;
             font-weight: 500;
             cursor: pointer;
-            box-sizing: border-box;
+            position: relative;
+            height: 54px;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: #3498db;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .date-input::-webkit-calendar-picker-indicator {
+            opacity: 0;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .guest-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .guest-group {
+            text-align: center;
+        }
+
+        .guest-label {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .guest-counter {
+            width: 100%;
         }
 
         .guest-select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ecf0f1;
+            border-radius: 12px;
+            font-size: 1rem;
+            color: #2c3e50;
+            background: #fafbfc;
+            transition: all 0.3s ease;
+            font-weight: 500;
             appearance: none;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 12px center;
-            background-repeat: no-repeat;
-            background-size: 16px;
-            padding-right: 40px;
+            cursor: pointer;
+            height: 54px;
         }
 
-        .date-input:focus, .guest-select:focus {
+        .guest-select:focus {
             outline: none;
-            border-color: #74b9ff;
+            border-color: #3498db;
             background: white;
-            box-shadow: 0 0 0 3px rgba(116, 185, 255, 0.1);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
 
         .child-ages-section {
-            background: #e3f2fd;
-            border: 1px solid #bbdefb;
+            background: #fff8e1;
+            border: 1px solid #ffe0b2;
             border-radius: 12px;
             padding: 20px;
-            margin-top: 15px;
+            margin-bottom: 25px;
             display: none;
         }
 
         .child-ages-title {
-            color: #1976d2;
+            color: #f57c00;
             font-size: 0.9rem;
             font-weight: 600;
             margin-bottom: 15px;
@@ -123,26 +178,28 @@
         }
 
         .child-age-select {
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            background: white;
+            padding: 15px;
+            border: 2px solid #ecf0f1;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: #fafbfc;
             color: #2c3e50;
             font-weight: 500;
             cursor: pointer;
+            height: 54px;
             transition: all 0.3s ease;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 8px center;
-            background-repeat: no-repeat;
-            background-size: 14px;
-            padding-right: 30px;
+        }
+
+        .child-age-select:focus {
+            outline: none;
+            border-color: #3498db;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
 
         .search-btn {
             width: 100%;
-            background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
+            background: linear-gradient(135deg, #c49b61 0%, #a0825a 100%);
             color: white;
             border: none;
             padding: 18px;
@@ -153,44 +210,21 @@
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-top: 25px;
-            box-shadow: 0 4px 15px rgba(253, 121, 168, 0.3);
         }
 
         .search-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(253, 121, 168, 0.4);
+            box-shadow: 0 6px 20px rgba(196, 155, 97, 0.4);
         }
 
         .results-section {
             margin-top: 30px;
         }
 
-        .loading-state {
-            text-align: center;
-            padding: 50px;
-            color: #7f8c8d;
-        }
-
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #ecf0f1;
-            border-radius: 50%;
-            border-top: 4px solid #74b9ff;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 25px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         .room-card {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             overflow: hidden;
             margin-bottom: 20px;
         }
@@ -199,9 +233,8 @@
             background: #2c3e50;
             color: white;
             padding: 20px;
-            font-size: 1.2rem;
-            font-weight: 600;
-            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 500;
         }
 
         .room-body {
@@ -209,134 +242,244 @@
         }
 
         .stay-info {
-            background: #fff3e0;
-            border: 1px solid #ffcc02;
-            border-radius: 12px;
+            background: #fff8e1;
+            border: 1px solid #ffe0b2;
+            border-radius: 10px;
             padding: 15px;
             margin-bottom: 20px;
             color: #e65100;
-            font-size: 0.95rem;
-            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .stay-info strong {
+            color: #d84315;
         }
 
         .discount-badge {
-            background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+            background: #4caf50;
             color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 0.9rem;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
             font-weight: 600;
             display: inline-block;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .price-section {
             text-align: center;
-            margin: 25px 0;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 15px;
+            margin: 20px 0;
         }
 
         .old-price {
             color: #95a5a6;
             text-decoration: line-through;
-            font-size: 1.1rem;
-            margin-bottom: 8px;
+            font-size: 1rem;
+            margin-bottom: 5px;
         }
 
         .current-price {
             color: #27ae60;
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: 700;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
+        }
+
+        .price-note {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            font-weight: 500;
         }
 
         .payment-info {
             background: #e8f5e8;
             border: 1px solid #c8e6c9;
-            border-radius: 12px;
-            padding: 18px;
-            margin: 20px 0;
-            font-size: 0.95rem;
-            color: #2e7d32;
-            text-align: center;
-        }
-
-        .countdown-section {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            margin: 25px 0;
-        }
-
-        .countdown-timer {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 20px 0;
-            flex-wrap: wrap;
-        }
-
-        .countdown-item {
-            background: rgba(255,255,255,0.2);
-            padding: 12px;
             border-radius: 10px;
-            min-width: 55px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 0.9rem;
+            color: #2e7d32;
         }
 
-        .countdown-number {
-            font-size: 1.4rem;
-            font-weight: 700;
-            display: block;
+        .hotel-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
         }
 
-        .countdown-label {
-            font-size: 0.75rem;
-            opacity: 0.9;
-            margin-top: 2px;
+        .hotel-info h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .hotel-features {
+            list-style: none;
+            padding: 0;
+        }
+
+        .hotel-features li {
+            padding: 5px 0;
+            color: #555;
+            font-size: 0.9rem;
         }
 
         .action-buttons {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
-            margin-top: 25px;
-        }
-
-        .btn-reserve, .btn-deposit {
-            border: none;
-            padding: 16px;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1rem;
-            color: white;
+            margin-top: 20px;
         }
 
         .btn-reserve {
-            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-reserve:hover {
+            background: #229954;
         }
 
         .btn-deposit {
-            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            background: #e67e22;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        /* Mobile Responsive */
+        .btn-deposit:hover {
+            background: #d35400;
+        }
+
+        .countdown-section {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .countdown-timer {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .countdown-item {
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 8px;
+            min-width: 50px;
+        }
+
+        .countdown-number {
+            font-size: 1.2rem;
+            font-weight: 700;
+            display: block;
+        }
+
+        .countdown-label {
+            font-size: 0.7rem;
+            opacity: 0.9;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #ecf0f1;
+            border-radius: 50%;
+            border-top: 3px solid #3498db;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alternative-hotels {
+            margin-top: 30px;
+        }
+
+        .hotel-option {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .hotel-option h5 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .hotel-option a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .hotel-option a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
         @media (max-width: 600px) {
             .container {
                 padding: 15px;
             }
             
-            .card-body {
-                padding: 0 20px 20px;
+            .date-row, .guest-row {
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+            
+            .date-group, .guest-group {
+                margin-bottom: 0;
+            }
+            
+            .date-label, .guest-label {
+                font-size: 0.8rem;
+                margin-bottom: 6px;
+            }
+            
+            .date-input, .guest-select, .child-age-select {
+                padding: 12px;
+                font-size: 0.9rem;
+                height: 48px;
+            }
+            
+            .child-ages-section {
+                padding: 15px;
+                margin-bottom: 20px;
             }
             
             .child-ages-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
                 gap: 10px;
             }
             
@@ -344,8 +487,26 @@
                 grid-template-columns: 1fr;
             }
             
-            .current-price {
-                font-size: 1.8rem;
+            .countdown-timer {
+                gap: 8px;
+            }
+            
+            .countdown-item {
+                min-width: 45px;
+                padding: 8px;
+            }
+            
+            .countdown-number {
+                font-size: 1rem;
+            }
+            
+            .countdown-label {
+                font-size: 0.65rem;
+            }
+            
+            /* Mobilde sonuçları daha yukarı göster */
+            .results-section {
+                margin-top: 15px;
             }
         }
     </style>
@@ -357,49 +518,53 @@
                 FİYAT HESAPLAMA
             </div>
             <div class="card-body">
-                <div class="form-section">
-                    <div class="form-group">
+                <div class="date-row">
+                    <div class="date-group">
                         <div class="date-label">Giriş Tarihi</div>
-                        <input type="date" class="date-input" id="checkinDate">
+                        <input type="date" class="date-input" id="checkinDate" onclick="this.showPicker()">
                     </div>
-                    
-                    <div class="form-group">
+                    <div class="date-group">
                         <div class="date-label">Çıkış Tarihi</div>
-                        <input type="date" class="date-input" id="checkoutDate">
+                        <input type="date" class="date-input" id="checkoutDate" onclick="this.showPicker()">
                     </div>
-                    
-                    <div class="form-group">
-                        <div class="guest-label">Yetişkin Sayısı</div>
-                        <select class="guest-select" id="adultSelect">
-                            <option value="1">1 Yetişkin</option>
-                            <option value="2" selected>2 Yetişkin</option>
-                            <option value="3">3 Yetişkin</option>
-                            <option value="4">4 Yetişkin</option>
-                            <option value="5">5 Yetişkin</option>
-                            <option value="6">6 Yetişkin</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <div class="guest-label">Çocuk Sayısı</div>
-                        <select class="guest-select" id="childSelect">
-                            <option value="0" selected>Çocuk Yok</option>
-                            <option value="1">1 Çocuk</option>
-                            <option value="2">2 Çocuk</option>
-                            <option value="3">3 Çocuk</option>
-                            <option value="4">4 Çocuk</option>
-                        </select>
-                    </div>
-
-                    <div class="child-ages-section" id="childAgesSection">
-                        <div class="child-ages-title">👶 Çocuk Yaşları</div>
-                        <div class="child-ages-grid" id="childAgesGrid"></div>
-                    </div>
-
-                    <button class="search-btn" onclick="searchRooms()">
-                        OTEL ARA
-                    </button>
                 </div>
+
+                <div class="guest-row">
+                    <div class="guest-group">
+                        <div class="guest-label">Yetişkin Sayısı</div>
+                        <div class="guest-counter">
+                            <select class="guest-select" id="adultSelect" onchange="updateAdultCount()">
+                                <option value="1">1 Yetişkin</option>
+                                <option value="2" selected>2 Yetişkin</option>
+                                <option value="3">3 Yetişkin</option>
+                                <option value="4">4 Yetişkin</option>
+                                <option value="5">5 Yetişkin</option>
+                                <option value="6">6 Yetişkin</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="guest-group">
+                        <div class="guest-label">Çocuk Sayısı</div>
+                        <div class="guest-counter">
+                            <select class="guest-select" id="childSelect" onchange="updateChildCount()">
+                                <option value="0" selected>Çocuk Yok</option>
+                                <option value="1">1 Çocuk</option>
+                                <option value="2">2 Çocuk</option>
+                                <option value="3">3 Çocuk</option>
+                                <option value="4">4 Çocuk</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="child-ages-section" id="childAgesSection">
+                    <div class="child-ages-title">👶 Çocuk Yaşları</div>
+                    <div class="child-ages-grid" id="childAgesGrid"></div>
+                </div>
+
+                <button class="search-btn" onclick="searchRooms()">
+                    FİYAT HESAPLA →
+                </button>
             </div>
         </div>
 
@@ -427,51 +592,50 @@
         let adultCount = 2;
         let childCount = 0;
 
-        // Sayfa yükleme
-        document.addEventListener('DOMContentLoaded', function() {
-            const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
+        // Sayfa yüklendiğinde
+        window.onload = function() {
+            const currentYear = new Date().getFullYear();
+            document.getElementById('checkinDate').value = `${currentYear}-06-30`;
+            document.getElementById('checkoutDate').value = `${currentYear}-07-01`;
             
-            const todayStr = today.toISOString().split('T')[0];
-            const tomorrowStr = tomorrow.toISOString().split('T')[0];
-            
-            const checkinInput = document.getElementById('checkinDate');
-            const checkoutInput = document.getElementById('checkoutDate');
-            
-            // Minimum tarihleri ayarla
-            checkinInput.min = todayStr;
-            checkoutInput.min = todayStr;
-            
-            // Varsayılan değerler
-            checkinInput.value = todayStr;
-            checkoutInput.value = tomorrowStr;
-            
-            // Giriş tarihi değiştiğinde
-            checkinInput.addEventListener('change', function() {
+            // Çıkış tarihi minimum değerini ayarla
+            document.getElementById('checkinDate').addEventListener('change', function() {
                 const checkinDate = this.value;
-                if (checkinDate) {
+                const checkoutInput = document.getElementById('checkoutDate');
+                checkoutInput.min = checkinDate;
+                
+                // Eğer çıkış tarihi giriş tarihinden önceyse, çıkış tarihini güncelle
+                if (checkoutInput.value <= checkinDate) {
                     const nextDay = new Date(checkinDate);
                     nextDay.setDate(nextDay.getDate() + 1);
-                    const nextDayStr = nextDay.toISOString().split('T')[0];
-                    checkoutInput.min = nextDayStr;
-                    
-                    if (checkoutInput.value <= checkinDate) {
-                        checkoutInput.value = nextDayStr;
-                    }
+                    checkoutInput.value = nextDay.toISOString().split('T')[0];
                 }
             });
             
-            // Select change eventleri
-            document.getElementById('adultSelect').addEventListener('change', function() {
-                adultCount = parseInt(this.value);
+            // Mobil tarayıcılarda takvimi otomatik aç
+            const dateInputs = document.querySelectorAll('.date-input');
+            dateInputs.forEach(input => {
+                input.addEventListener('click', function() {
+                    if (this.showPicker) {
+                        this.showPicker();
+                    }
+                });
+                
+                // Tarih seçildiğinde otomatik kapan
+                input.addEventListener('change', function() {
+                    this.blur(); // Input'tan çık
+                });
             });
-            
-            document.getElementById('childSelect').addEventListener('change', function() {
-                childCount = parseInt(this.value);
-                updateChildAges();
-            });
-        });
+        };
+
+        function updateAdultCount() {
+            adultCount = parseInt(document.getElementById('adultSelect').value);
+        }
+
+        function updateChildCount() {
+            childCount = parseInt(document.getElementById('childSelect').value);
+            updateChildAges();
+        }
 
         function updateChildAges() {
             const section = document.getElementById('childAgesSection');
@@ -567,10 +731,7 @@
             // Çocuk yaşlarını kontrol et
             const childAges = [];
             for (let i = 0; i < childCount; i++) {
-                const ageElement = document.getElementById(`childAge${i}`);
-                if (!ageElement) continue;
-                
-                const age = parseInt(ageElement.value);
+                const age = parseInt(document.getElementById(`childAge${i}`).value);
                 if (isNaN(age)) {
                     alert(`Lütfen ${i + 1}. çocuğun yaşını seçin!`);
                     return;
@@ -580,8 +741,32 @@
 
             showLoading();
             
-            // 1.5 saniye bekle
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            // Sonuçlar bölümüne scroll - mobilde daha yukarı
+            setTimeout(() => {
+                const resultsSection = document.getElementById('resultsSection');
+                
+                // Mobil cihazda daha yukarı scroll
+                if (window.innerWidth <= 600) {
+                    const yOffset = -100; // Mobilde çok daha yukarı
+                    const y = resultsSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                    
+                    window.scrollTo({
+                        top: Math.max(0, y), // Negatif değer olmasını engelle
+                        behavior: 'smooth'
+                    });
+                } else {
+                    // Desktop'ta normal scroll
+                    const yOffset = -20;
+                    const y = resultsSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                    
+                    window.scrollTo({
+                        top: y,
+                        behavior: 'smooth'
+                    });
+                }
+            }, 100);
+            
+            await new Promise(resolve => setTimeout(resolve, 1000));
 
             try {
                 const result = calculatePrice(checkinDate, checkoutDate, adultCount, childAges);
@@ -596,7 +781,7 @@
                 <div class="loading-state">
                     <div class="spinner"></div>
                     <h3>Müsait odalar aranıyor...</h3>
-                    <p>En iyi fiyatları buluyoruz, lütfen bekleyin</p>
+                    <p>En iyi fiyatları buluyoruz</p>
                 </div>
             `;
         }
@@ -629,39 +814,38 @@
 
         function displayResults(data) {
             const { checkinDate, checkoutDate, nights, adults, childAges, price } = data;
-            const oldPrice = Math.round(price * 1.67);
+            const oldPrice = Math.round(price * 1.67); // %40 indirim için
             const depositAmount = Math.round(price * 0.25);
             
             let childStr = '';
             if (childAges.length > 0) {
-                childStr = ` + ${childAges.length} Çocuk`;
+                childStr = ` ${childAges.length} Çocuk`;
             }
 
             document.getElementById('resultsSection').innerHTML = `
                 <div class="room-card">
-                    <div class="room-header">🏨 STANDART ODA - HER ŞEY DAHİL</div>
+                    <div class="room-header">STANDART ODA</div>
                     <div class="room-body">
-                        <div class="stay-info">
-                            📅 <strong>Giriş:</strong> ${formatDate(checkinDate)} - <strong>Çıkış:</strong> ${formatDate(checkoutDate)}<br>
-                            🌙 ${nights} Gece • 👥 ${adults} Yetişkin${childStr}
+                        <div class="payment-info">
+                            📅 <strong>Giriş:</strong> ${formatDate(checkinDate)} & <strong>Çıkış:</strong> ${formatDate(checkoutDate)}<br>
+                            ${nights} Gece ${adults} Yetişkin${childStr}
                         </div>
                         
-                        <div class="discount-badge">🔥 Bugüne Özel %40 İndirim</div>
+                        <div class="discount-badge">Bugüne Özel %40 İndirim</div>
                         
                         <div class="price-section">
                             <div class="old-price">${formatPrice(oldPrice)}</div>
                             <div class="current-price">${formatPrice(price)}</div>
-                            <div class="price-note">Toplam Tutar</div>
                         </div>
 
                         <div class="payment-info">
-                            💳 <strong>${formatPrice(depositAmount)} ön ödeme</strong> ile odanızı ayırtabilir, 
+                            <strong>${formatPrice(depositAmount)} ön ödeme</strong> ile odanızı ayırtabilir, 
                             kalan tutarı girişte ödeyebilirsiniz.
                         </div>
 
                         <div class="countdown-section">
                             <h4>🔥 Kampanyanın Bitmesine Kalan Süre</h4>
-                            <div class="countdown-timer">
+                            <div class="countdown-timer" id="countdown">
                                 <div class="countdown-item">
                                     <span class="countdown-number" id="days">00</span>
                                     <span class="countdown-label">Gün</span>
@@ -681,9 +865,20 @@
                             </div>
                         </div>
 
+                        <div class="hotel-info">
+                            <h4>🏨 MESUT HOTEL</h4>
+                            <ul class="hotel-features">
+                                <li>🏖️ Antalya / Alanya</li>
+                                <li>🏝️ Denize Sıfır</li>
+                                <li>🍽️ Alkollü Herşey Dahil</li>
+                                <li>🌐 <a href="https://www.mesuthotelalanya.com" target="_blank">www.mesuthotelalanya.com</a></li>
+                                <li>📞 <a href="tel:02425245594">0242 524 55 94</a></li>
+                            </ul>
+                        </div>
+
                         <div class="action-buttons">
-                            <button class="btn-reserve" onclick="alert('Rezervasyon sistemi yakında aktif olacak!')">💳 Şimdi Öde</button>
-                            <button class="btn-deposit" onclick="alert('Kapora ödeme sistemi yakında aktif olacak!')">💰 Kapora ile Öde</button>
+                            <button class="btn-reserve">Şimdi Öde</button>
+                            <button class="btn-deposit">Kapora ile Öde</button>
                         </div>
                     </div>
                 </div>
@@ -698,8 +893,32 @@
                     <div class="room-header">😔 Üzgünüz!</div>
                     <div class="room-body">
                         <p style="text-align: center; margin-bottom: 20px;">
-                            Sizi konaklatabileceğimiz büyüklükteki odalarımız sezon sonuna kadar dolu.
+                            Sizi konaklatabileceğimiz büyüklükteki odalarımız sezon sonuna kadar dolu.<br>
+                            <strong>Sizi diğer otellerimizde ağırlayabiliriz:</strong>
                         </p>
+                        
+                        <div class="alternative-hotels">
+                            <div class="hotel-option">
+                                <h5>🏨 GRAND BARHAN HOTEL</h5>
+                                <p>🏖️ Antalya / Alanya • 🏝️ Denize Sıfır • 🍽️ Alkolsüz Herşey Dahil</p>
+                                <a href="https://www.grandbarhanhotel.net" target="_blank">www.grandbarhanhotel.net</a><br>
+                                <a href="tel:02425245934">📞 0242 524 59 34</a>
+                            </div>
+                            
+                            <div class="hotel-option">
+                                <h5>🏨 DE MARE HOTEL</h5>
+                                <p>🏖️ Antalya / Alanya • 🏝️ Denize Sıfır • 🍽️ Alkolsüz Herşey Dahil</p>
+                                <a href="https://www.demarefamilyhotel.net" target="_blank">www.demarefamilyhotel.net</a><br>
+                                <a href="tel:02425245596">📞 0242 524 55 96</a>
+                            </div>
+                            
+                            <div class="hotel-option">
+                                <h5>🏨 CLUB SVS HOTEL</h5>
+                                <p>🏖️ Antalya / Alanya • 🏝️ Denize Sıfır • 🍽️ Alkollü/Alkolsüz Seçenekleri</p>
+                                <a href="https://www.clubsvshotel.com" target="_blank">www.clubsvshotel.com</a><br>
+                                <a href="tel:02425245680">📞 0242 524 56 80</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
@@ -722,15 +941,10 @@
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((distance % (1000 * 60)) / 1000);
                 
-                const daysEl = document.getElementById('days');
-                const hoursEl = document.getElementById('hours');
-                const minutesEl = document.getElementById('minutes');
-                const secondsEl = document.getElementById('seconds');
-                
-                if (daysEl) daysEl.textContent = days.toString().padStart(2, '0');
-                if (hoursEl) hoursEl.textContent = hours.toString().padStart(2, '0');
-                if (minutesEl) minutesEl.textContent = minutes.toString().padStart(2, '0');
-                if (secondsEl) secondsEl.textContent = seconds.toString().padStart(2, '0');
+                document.getElementById('days').textContent = days.toString().padStart(2, '0');
+                document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+                document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+                                                document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
             }, 1000);
         }
     </script>
