@@ -76,26 +76,15 @@
             letter-spacing: 0.5px;
         }
 
-        .date-input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #ecf0f1;
-            border-radius: 12px;
-            font-size: 1rem;
-            color: #2c3e50;
-            background: #fafbfc;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            cursor: pointer;
-            position: relative;
-            height: 54px;
-        }
-
-        .date-input:focus {
+        .date-input:focus, .guest-select:focus {
             outline: none;
             border-color: #3498db;
             background: white;
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .guest-select {
+            appearance: none;
         }
 
         .date-input::-webkit-calendar-picker-indicator {
@@ -456,10 +445,12 @@
             .date-row, .guest-row {
                 grid-template-columns: 1fr 1fr;
                 gap: 12px;
+                margin-bottom: 20px;
             }
             
             .date-group, .guest-group {
                 margin-bottom: 0;
+                width: 100%;
             }
             
             .date-label, .guest-label {
@@ -471,6 +462,8 @@
                 padding: 12px;
                 font-size: 0.9rem;
                 height: 48px;
+                width: 100%;
+                box-sizing: border-box;
             }
             
             .child-ages-section {
@@ -594,9 +587,20 @@
 
         // Sayfa yüklendiğinde
         window.onload = function() {
-            const currentYear = new Date().getFullYear();
-            document.getElementById('checkinDate').value = `${currentYear}-06-30`;
-            document.getElementById('checkoutDate').value = `${currentYear}-07-01`;
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            const currentMonth = (today.getMonth() + 1).toString().padStart(2, '0');
+            const currentDay = today.getDate().toString().padStart(2, '0');
+            const todayStr = `${currentYear}-${currentMonth}-${currentDay}`;
+            
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = tomorrow.toISOString().split('T')[0];
+            
+            // Bugünün tarihi minimum olarak ayarla
+            document.getElementById('checkinDate').min = todayStr;
+            document.getElementById('checkinDate').value = todayStr;
+            document.getElementById('checkoutDate').value = tomorrowStr;
             
             // Çıkış tarihi minimum değerini ayarla
             document.getElementById('checkinDate').addEventListener('change', function() {
