@@ -128,38 +128,28 @@
         }
 
         .guest-counter {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #fafbfc;
+            width: 100%;
+        }
+
+        .guest-select {
+            width: 100%;
+            padding: 15px;
             border: 2px solid #ecf0f1;
             border-radius: 12px;
-            padding: 10px;
-        }
-
-        .counter-btn {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: #7f8c8d;
+            font-size: 1rem;
+            color: #2c3e50;
+            background: #fafbfc;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            appearance: none;
             cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 6px;
-            transition: all 0.2s ease;
         }
 
-        .counter-btn:hover {
-            background: #e9ecef;
-            color: #2c3e50;
-        }
-
-        .counter-value {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #2c3e50;
-            margin: 0 15px;
-            min-width: 30px;
-            text-align: center;
+        .guest-select:focus {
+            outline: none;
+            border-color: #3498db;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
 
         .child-ages-section {
@@ -485,19 +475,28 @@
 
                 <div class="guest-row">
                     <div class="guest-group">
-                        <div class="guest-label">Misafir</div>
+                        <div class="guest-label">Yetişkin Sayısı</div>
                         <div class="guest-counter">
-                            <button class="counter-btn" onclick="changeCount('adult', -1)">−</button>
-                            <span class="counter-value" id="adultCount">2</span>
-                            <button class="counter-btn" onclick="changeCount('adult', 1)">+</button>
+                            <select class="guest-select" id="adultSelect" onchange="updateAdultCount()">
+                                <option value="1">1 Yetişkin</option>
+                                <option value="2" selected>2 Yetişkin</option>
+                                <option value="3">3 Yetişkin</option>
+                                <option value="4">4 Yetişkin</option>
+                                <option value="5">5 Yetişkin</option>
+                                <option value="6">6 Yetişkin</option>
+                            </select>
                         </div>
                     </div>
                     <div class="guest-group">
-                        <div class="guest-label">Çocuk</div>
+                        <div class="guest-label">Çocuk Sayısı</div>
                         <div class="guest-counter">
-                            <button class="counter-btn" onclick="changeCount('child', -1)">−</button>
-                            <span class="counter-value" id="childCount">0</span>
-                            <button class="counter-btn" onclick="changeCount('child', 1)">+</button>
+                            <select class="guest-select" id="childSelect" onchange="updateChildCount()">
+                                <option value="0" selected>Çocuk Yok</option>
+                                <option value="1">1 Çocuk</option>
+                                <option value="2">2 Çocuk</option>
+                                <option value="3">3 Çocuk</option>
+                                <option value="4">4 Çocuk</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -544,15 +543,13 @@
             document.getElementById('checkoutDate').value = `${currentYear}-07-01`;
         };
 
-        function changeCount(type, delta) {
-            if (type === 'adult') {
-                adultCount = Math.max(1, Math.min(6, adultCount + delta));
-                document.getElementById('adultCount').textContent = adultCount;
-            } else {
-                childCount = Math.max(0, Math.min(4, childCount + delta));
-                document.getElementById('childCount').textContent = childCount;
-                updateChildAges();
-            }
+        function updateAdultCount() {
+            adultCount = parseInt(document.getElementById('adultSelect').value);
+        }
+
+        function updateChildCount() {
+            childCount = parseInt(document.getElementById('childSelect').value);
+            updateChildAges();
         }
 
         function updateChildAges() {
@@ -574,7 +571,7 @@
                 
                 const defaultOption = document.createElement('option');
                 defaultOption.value = '';
-                defaultOption.textContent = `${i + 1}. çocuk`;
+                defaultOption.textContent = `${i + 1}. çocuk yaşı`;
                 defaultOption.disabled = true;
                 defaultOption.selected = true;
                 select.appendChild(defaultOption);
@@ -582,7 +579,7 @@
                 for (let age = 0; age <= 17; age++) {
                     const option = document.createElement('option');
                     option.value = age;
-                    option.textContent = age === 0 ? 'Bebek' : `${age} yaş`;
+                    option.textContent = age === 0 ? 'Bebek (0 yaş)' : `${age} yaş`;
                     select.appendChild(option);
                 }
                 
@@ -837,4 +834,9 @@
                 document.getElementById('days').textContent = days.toString().padStart(2, '0');
                 document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
                 document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
-                document.getElementById('seconds').textContent = seconds.toString().padStart(2
+                                                document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
