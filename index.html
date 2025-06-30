@@ -87,6 +87,7 @@
             transition: all 0.3s ease;
             font-weight: 500;
             cursor: pointer;
+            position: relative;
         }
 
         .date-input:focus {
@@ -104,6 +105,16 @@
             width: 100%;
             height: 100%;
             cursor: pointer;
+        }
+
+        /* Takvim ikonunu göster */
+        .date-input::before {
+            content: "📅";
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
         }
 
         .guest-row {
@@ -443,9 +454,27 @@
 
         /* Responsive */
         @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            
             .date-row, .guest-row {
-                grid-template-columns: 1fr;
-                gap: 15px;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+            
+            .date-group, .guest-group {
+                margin-bottom: 0;
+            }
+            
+            .date-label, .guest-label {
+                font-size: 0.8rem;
+                margin-bottom: 6px;
+            }
+            
+            .date-input, .guest-select {
+                padding: 12px;
+                font-size: 0.9rem;
             }
             
             .action-buttons {
@@ -453,7 +482,20 @@
             }
             
             .countdown-timer {
-                gap: 10px;
+                gap: 8px;
+            }
+            
+            .countdown-item {
+                min-width: 45px;
+                padding: 8px;
+            }
+            
+            .countdown-number {
+                font-size: 1rem;
+            }
+            
+            .countdown-label {
+                font-size: 0.65rem;
             }
         }
     </style>
@@ -468,11 +510,11 @@
                 <div class="date-row">
                     <div class="date-group">
                         <div class="date-label">Giriş Tarihi</div>
-                        <input type="date" class="date-input" id="checkinDate">
+                        <input type="date" class="date-input" id="checkinDate" onclick="this.showPicker()">
                     </div>
                     <div class="date-group">
                         <div class="date-label">Çıkış Tarihi</div>
-                        <input type="date" class="date-input" id="checkoutDate">
+                        <input type="date" class="date-input" id="checkoutDate" onclick="this.showPicker()">
                     </div>
                 </div>
 
@@ -557,6 +599,21 @@
                     nextDay.setDate(nextDay.getDate() + 1);
                     checkoutInput.value = nextDay.toISOString().split('T')[0];
                 }
+            });
+            
+            // Mobil tarayıcılarda takvimi otomatik aç
+            const dateInputs = document.querySelectorAll('.date-input');
+            dateInputs.forEach(input => {
+                input.addEventListener('click', function() {
+                    if (this.showPicker) {
+                        this.showPicker();
+                    }
+                });
+                
+                // Tarih seçildiğinde otomatik kapan
+                input.addEventListener('change', function() {
+                    this.blur(); // Input'tan çık
+                });
             });
         };
 
@@ -673,11 +730,15 @@
 
             showLoading();
             
-            // Sonuçlar bölümüne scroll
+            // Sonuçlar bölümüne scroll - en üste
             setTimeout(() => {
-                document.getElementById('resultsSection').scrollIntoView({ 
-                    behavior: 'smooth',
-                    block: 'start'
+                const resultsSection = document.getElementById('resultsSection');
+                const yOffset = -20; // Biraz üst margin
+                const y = resultsSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                
+                window.scrollTo({
+                    top: y,
+                    behavior: 'smooth'
                 });
             }, 100);
             
