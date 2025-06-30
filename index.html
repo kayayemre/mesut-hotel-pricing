@@ -617,50 +617,68 @@
             };
         }
         function displayResults(data) {
-    const { checkinDate, checkoutDate, nights, adults, childAges, price } = data;
-    const oldPrice = Math.round(price * 1.67);
-    const depositAmount = Math.round(price * 0.25);
-
-    // Tarih ve gün hesaplamaları
-    const months = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
-    function gunIsmi(date) {
-        const days = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
-        return days[date.getDay()];
-    }
-    const girisTarihi = `${checkinDate.getDate()} ${months[checkinDate.getMonth()]} ${gunIsmi(checkinDate)}`;
-    const cikisTarihi = `${checkoutDate.getDate()} ${months[checkoutDate.getMonth()]} ${gunIsmi(checkoutDate)}`;
-    let cocukStr = childAges.length > 0 ? ` ${childAges.length} Çocuk` : '';
-    
-    document.getElementById('resultsSection').innerHTML = `
-      <div style="max-width:440px;margin:36px auto 32px auto;padding:28px 18px 32px 18px;border-radius:18px;box-shadow:0 4px 20px rgba(0,0,0,0.08);background:#fff;text-align:center;">
-        <div style="font-size:2.1rem;font-weight:700;color:#2c3e50;line-height:1.13;">
-            STANDART ODA - Her Şey Dahil
-        </div>
-        <div style="margin:22px 0 14px 0;">
-          <span style="background:#e8f5e8;color:#207a3a;display:inline-block;border-radius:10px;padding:10px 18px;font-size:1.04rem;font-weight:500;">
-            <b>Giriş:</b> ${girisTarihi} &nbsp; <b>Çıkış:</b> ${cikisTarihi}
-            <span style="font-weight:400;color:#207a3a;font-size:0.99rem;display:block;margin-top:2px;">
-              ${nights} Gece ${nights+1} Gün ${adults} Yetişkin${cocukStr}
-            </span>
-          </span>
-        </div>
-        <div style="display:inline-block;background:#4caf50;color:#fff;padding:7px 22px;border-radius:20px;font-size:1.1rem;font-weight:600;letter-spacing:.5px;margin:18px 0 6px 0;">
-          Bugüne Özel %40 İndirim
-        </div>
-        <div style="font-size:2.6rem;font-weight:700;color:#27ae60;margin:16px 0 0 0;line-height:1.1;">
-            ${Number(price).toLocaleString('tr-TR')} ₺
-        </div>
-        <div style="font-size:1.3rem;color:#bdbdbd;text-decoration:line-through;font-weight:600;margin-bottom:14px;">
-            ${Number(oldPrice).toLocaleString('tr-TR')} ₺
-        </div>
-        <div style="font-size:1.14rem;color:#2e7d32;background:#e8f5e8;border-radius:9px;display:inline-block;padding:10px 23px;font-weight:600;margin-bottom:4px;margin-top:14px;">
-            ${Number(depositAmount).toLocaleString('tr-TR')} ₺ ön ödeme ile odanızı ayırtabilir,<br>
-            kalan tutarı girişte ödeyebilirsiniz.
-        </div>
-      </div>
-    `;
-}
-
+            const { checkinDate, checkoutDate, nights, adults, childAges, price } = data;
+            const oldPrice = Math.round(price * 1.67);
+            const depositAmount = Math.round(price * 0.25);
+            let childStr = '';
+            if (childAges.length > 0) { childStr = ` ${childAges.length} Çocuk`; }
+            document.getElementById('resultsSection').innerHTML = `
+                <div class="room-card">
+                    <div class="room-header">STANDART ODA</div>
+                    <div class="room-body">
+                        <div class="payment-info">
+                            📅 <strong>Giriş:</strong> ${formatDate(checkinDate)} & <strong>Çıkış:</strong> ${formatDate(checkoutDate)}<br>
+                            ${nights} Gece ${adults} Yetişkin${childStr}
+                        </div>
+                        <div class="discount-badge">Bugüne Özel %40 İndirim</div>
+                        <div class="price-section">
+                            <div class="old-price">${formatPrice(oldPrice)}</div>
+                            <div class="current-price">${formatPrice(price)}</div>
+                        </div>
+                        <div class="payment-info">
+                            <strong>${formatPrice(depositAmount)} ön ödeme</strong> ile odanızı ayırtabilir, 
+                            kalan tutarı girişte ödeyebilirsiniz.
+                        </div>
+                        <div class="countdown-section">
+                            <h4>🔥 Kampanyanın Bitmesine Kalan Süre</h4>
+                            <div class="countdown-timer" id="countdown">
+                                <div class="countdown-item">
+                                    <span class="countdown-number" id="days">00</span>
+                                    <span class="countdown-label">Gün</span>
+                                </div>
+                                <div class="countdown-item">
+                                    <span class="countdown-number" id="hours">00</span>
+                                    <span class="countdown-label">Saat</span>
+                                </div>
+                                <div class="countdown-item">
+                                    <span class="countdown-number" id="minutes">00</span>
+                                    <span class="countdown-label">Dakika</span>
+                                </div>
+                                <div class="countdown-item">
+                                    <span class="countdown-number" id="seconds">00</span>
+                                    <span class="countdown-label">Saniye</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="hotel-info">
+                            <h4>🏨 MESUT HOTEL</h4>
+                            <ul class="hotel-features">
+                                <li>🏖️ Antalya / Alanya</li>
+                                <li>🏝️ Denize Sıfır</li>
+                                <li>🍽️ Alkollü Herşey Dahil</li>
+                                <li>🌐 <a href="https://www.mesuthotelalanya.com" target="_blank">www.mesuthotelalanya.com</a></li>
+                                <li>📞 <a href="tel:02425245594">0242 524 55 94</a></li>
+                            </ul>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn-reserve">Şimdi Öde</button>
+                            <button class="btn-deposit">Kapora ile Öde</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            startCountdown();
+        }
         function displayNoAvailability() {
             document.getElementById('resultsSection').innerHTML = `
                 <div class="room-card">
