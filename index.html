@@ -92,6 +92,8 @@
             transition: all 0.3s ease;
             font-weight: 500;
             cursor: pointer;
+            height: 54px;
+            box-sizing: border-box;
         }
 
         .date-input:focus {
@@ -504,22 +506,24 @@
             
             /* Mobilde tüm input ve select alanlarını aynı boyutta yap */
             .date-input, .guest-select {
-                height: 54px;
-                padding: 15px;
-                font-size: 1rem;
-                border-radius: 10px;
-                border: 1px solid #ddd;
-                background: #f8f9fa;
-                color: #2c3e50;
-                font-weight: 500;
+                height: 54px !important;
+                padding: 15px !important;
+                font-size: 1rem !important;
+                border-radius: 10px !important;
+                border: 1px solid #ddd !important;
+                background: #f8f9fa !important;
+                color: #2c3e50 !important;
+                font-weight: 500 !important;
+                box-sizing: border-box !important;
+                width: 100% !important;
             }
             
             .guest-select {
-                padding-right: 40px;
-                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-                background-position: right 12px center;
-                background-repeat: no-repeat;
-                background-size: 16px;
+                padding-right: 40px !important;
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e") !important;
+                background-position: right 12px center !important;
+                background-repeat: no-repeat !important;
+                background-size: 16px !important;
             }
             
             .child-ages-grid {
@@ -653,42 +657,56 @@
             tomorrow.setDate(tomorrow.getDate() + 1);
             const tomorrowStr = tomorrow.toISOString().split('T')[0];
             
-            // Bugünün tarihi minimum olarak ayarla
             const checkinInput = document.getElementById('checkinDate');
             const checkoutInput = document.getElementById('checkoutDate');
             
+            // Bugünden önceki tarihleri engelle
             checkinInput.min = todayStr;
+            checkoutInput.min = todayStr;
+            
+            // Varsayılan değerler
             checkinInput.value = todayStr;
             checkoutInput.value = tomorrowStr;
             
             // Giriş tarihi değiştiğinde çıkış tarihi minimumunu güncelle
             checkinInput.addEventListener('change', function() {
                 const checkinDate = this.value;
-                checkoutInput.min = checkinDate;
-                
-                // Eğer çıkış tarihi giriş tarihinden önceyse veya eşitse, çıkış tarihini güncelle
-                if (checkoutInput.value <= checkinDate) {
+                if (checkinDate) {
+                    // Çıkış tarihi için minimum giriş tarihinden sonraki gün
                     const nextDay = new Date(checkinDate);
                     nextDay.setDate(nextDay.getDate() + 1);
-                    checkoutInput.value = nextDay.toISOString().split('T')[0];
+                    const nextDayStr = nextDay.toISOString().split('T')[0];
+                    checkoutInput.min = nextDayStr;
+                    
+                    // Eğer çıkış tarihi giriş tarihinden önce veya eşitse, çıkış tarihini güncelle
+                    if (checkoutInput.value <= checkinDate) {
+                        checkoutInput.value = nextDayStr;
+                    }
                 }
+                this.blur(); // Mobilde takvimi kapat
             });
             
-            // Çıkış tarihi için başlangıç minimumu ayarla
-            checkoutInput.min = todayStr;
+            // Çıkış tarihi değiştiğinde de mobilde takvimi kapat
+            checkoutInput.addEventListener('change', function() {
+                this.blur();
+            });
             
-            // Mobil tarayıcılarda takvimi otomatik aç
+            // Mobil cihazlarda date picker'ı otomatik aç
             const dateInputs = document.querySelectorAll('.date-input');
             dateInputs.forEach(input => {
                 input.addEventListener('click', function() {
-                    if (this.showPicker) {
+                    if (this.showPicker && typeof this.showPicker === 'function') {
                         this.showPicker();
                     }
                 });
                 
-                // Tarih seçildiğinde otomatik kapan
-                input.addEventListener('change', function() {
-                    this.blur(); // Input'tan çık
+                // Focus olduğunda da picker'ı aç
+                input.addEventListener('focus', function() {
+                    if (this.showPicker && typeof this.showPicker === 'function') {
+                        setTimeout(() => {
+                            this.showPicker();
+                        }, 100);
+                    }
                 });
             });
         };
@@ -796,7 +814,10 @@
             // Çocuk yaşlarını kontrol et
             const childAges = [];
             for (let i = 0; i < childCount; i++) {
-                const age = parseInt(document.getElementById(`childAge${i}`).value);
+                const ageElement = document.getElementById(`childAge${i}`);
+                if (!ageElement) continue;
+                
+                const age = parseInt(ageElement.value);
                 if (isNaN(age)) {
                     alert(`Lütfen ${i + 1}. çocuğun yaşını seçin!`);
                     return;
@@ -809,13 +830,15 @@
             // OTEL ARA butonu görünmeyene kadar scroll
             setTimeout(() => {
                 const searchBtn = document.querySelector('.search-btn');
-                const searchBtnRect = searchBtn.getBoundingClientRect();
-                const scrollAmount = searchBtnRect.bottom + window.pageYOffset;
-                
-                window.scrollTo({
-                    top: scrollAmount,
-                    behavior: 'smooth'
-                });
+                if (searchBtn) {
+                    const searchBtnRect = searchBtn.getBoundingClientRect();
+                    const scrollAmount = searchBtnRect.bottom + window.pageYOffset;
+                    
+                    window.scrollTo({
+                        top: scrollAmount,
+                        behavior: 'smooth'
+                    });
+                }
             }, 100);
             
             await new Promise(resolve => setTimeout(resolve, 1500));
@@ -824,6 +847,7 @@
                 const result = calculatePrice(checkinDate, checkoutDate, adultCount, childAges);
                 displayResults(result);
             } catch (error) {
+                console.error('Fiyat hesaplama hatası:', error);
                 displayNoAvailability();
             }
         }
