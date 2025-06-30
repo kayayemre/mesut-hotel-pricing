@@ -76,25 +76,15 @@
             letter-spacing: 0.5px;
         }
 
-        .date-input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #ecf0f1;
-            border-radius: 12px;
-            font-size: 1rem;
-            color: #2c3e50;
-            background: #fafbfc;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .date-input:focus {
+        .date-input:focus, .guest-select:focus {
             outline: none;
             border-color: #3498db;
             background: white;
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .guest-select {
+            appearance: none;
         }
 
         .date-input::-webkit-calendar-picker-indicator {
@@ -105,16 +95,6 @@
             width: 100%;
             height: 100%;
             cursor: pointer;
-        }
-
-        /* Takvim ikonunu göster */
-        .date-input::before {
-            content: "📅";
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
         }
 
         .guest-row {
@@ -153,6 +133,7 @@
             font-weight: 500;
             appearance: none;
             cursor: pointer;
+            height: 54px;
         }
 
         .guest-select:focus {
@@ -186,20 +167,23 @@
         }
 
         .child-age-select {
-            padding: 12px;
-            border: 2px solid #ffcc02;
+            padding: 15px;
+            border: 2px solid #ecf0f1;
             border-radius: 12px;
-            font-size: 0.95rem;
-            background: white;
+            font-size: 1rem;
+            background: #fafbfc;
             color: #2c3e50;
             font-weight: 500;
             cursor: pointer;
+            height: 54px;
+            transition: all 0.3s ease;
         }
 
         .child-age-select:focus {
             outline: none;
-            border-color: #f39c12;
-            box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.1);
+            border-color: #3498db;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
         }
 
         .search-btn {
@@ -458,13 +442,8 @@
                 padding: 15px;
             }
             
-            .date-row, .guest-row {
-                grid-template-columns: 1fr 1fr;
-                gap: 12px;
-            }
-            
-            .date-group, .guest-group {
-                margin-bottom: 0;
+            .form-group {
+                margin-bottom: 15px;
             }
             
             .date-label, .guest-label {
@@ -472,9 +451,22 @@
                 margin-bottom: 6px;
             }
             
-            .date-input, .guest-select {
+            .date-input, .guest-select, .child-age-select {
                 padding: 12px;
                 font-size: 0.9rem;
+                height: 48px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            .child-ages-section {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+            
+            .child-ages-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
             }
             
             .action-buttons {
@@ -497,6 +489,11 @@
             .countdown-label {
                 font-size: 0.65rem;
             }
+            
+            /* Mobilde sonuçları daha yukarı göster */
+            .results-section {
+                margin-top: 15px;
+            }
         }
     </style>
 </head>
@@ -507,42 +504,38 @@
                 FİYAT HESAPLAMA
             </div>
             <div class="card-body">
-                <div class="date-row">
-                    <div class="date-group">
+                <div class="form-section">
+                    <div class="form-group">
                         <div class="date-label">Giriş Tarihi</div>
                         <input type="date" class="date-input" id="checkinDate" onclick="this.showPicker()">
                     </div>
-                    <div class="date-group">
+                    
+                    <div class="form-group">
                         <div class="date-label">Çıkış Tarihi</div>
                         <input type="date" class="date-input" id="checkoutDate" onclick="this.showPicker()">
                     </div>
-                </div>
-
-                <div class="guest-row">
-                    <div class="guest-group">
+                    
+                    <div class="form-group">
                         <div class="guest-label">Yetişkin Sayısı</div>
-                        <div class="guest-counter">
-                            <select class="guest-select" id="adultSelect" onchange="updateAdultCount()">
-                                <option value="1">1 Yetişkin</option>
-                                <option value="2" selected>2 Yetişkin</option>
-                                <option value="3">3 Yetişkin</option>
-                                <option value="4">4 Yetişkin</option>
-                                <option value="5">5 Yetişkin</option>
-                                <option value="6">6 Yetişkin</option>
-                            </select>
-                        </div>
+                        <select class="guest-select" id="adultSelect" onchange="updateAdultCount()">
+                            <option value="1">1 Yetişkin</option>
+                            <option value="2" selected>2 Yetişkin</option>
+                            <option value="3">3 Yetişkin</option>
+                            <option value="4">4 Yetişkin</option>
+                            <option value="5">5 Yetişkin</option>
+                            <option value="6">6 Yetişkin</option>
+                        </select>
                     </div>
-                    <div class="guest-group">
+                    
+                    <div class="form-group">
                         <div class="guest-label">Çocuk Sayısı</div>
-                        <div class="guest-counter">
-                            <select class="guest-select" id="childSelect" onchange="updateChildCount()">
-                                <option value="0" selected>Çocuk Yok</option>
-                                <option value="1">1 Çocuk</option>
-                                <option value="2">2 Çocuk</option>
-                                <option value="3">3 Çocuk</option>
-                                <option value="4">4 Çocuk</option>
-                            </select>
-                        </div>
+                        <select class="guest-select" id="childSelect" onchange="updateChildCount()">
+                            <option value="0" selected>Çocuk Yok</option>
+                            <option value="1">1 Çocuk</option>
+                            <option value="2">2 Çocuk</option>
+                            <option value="3">3 Çocuk</option>
+                            <option value="4">4 Çocuk</option>
+                        </select>
                     </div>
                 </div>
 
@@ -583,23 +576,39 @@
 
         // Sayfa yüklendiğinde
         window.onload = function() {
-            const currentYear = new Date().getFullYear();
-            document.getElementById('checkinDate').value = `${currentYear}-06-30`;
-            document.getElementById('checkoutDate').value = `${currentYear}-07-01`;
+            const today = new Date();
+            const currentYear = today.getFullYear();
+            const currentMonth = (today.getMonth() + 1).toString().padStart(2, '0');
+            const currentDay = today.getDate().toString().padStart(2, '0');
+            const todayStr = `${currentYear}-${currentMonth}-${currentDay}`;
             
-            // Çıkış tarihi minimum değerini ayarla
-            document.getElementById('checkinDate').addEventListener('change', function() {
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = tomorrow.toISOString().split('T')[0];
+            
+            // Bugünün tarihi minimum olarak ayarla
+            const checkinInput = document.getElementById('checkinDate');
+            const checkoutInput = document.getElementById('checkoutDate');
+            
+            checkinInput.min = todayStr;
+            checkinInput.value = todayStr;
+            checkoutInput.value = tomorrowStr;
+            
+            // Giriş tarihi değiştiğinde çıkış tarihi minimumunu güncelle
+            checkinInput.addEventListener('change', function() {
                 const checkinDate = this.value;
-                const checkoutInput = document.getElementById('checkoutDate');
                 checkoutInput.min = checkinDate;
                 
-                // Eğer çıkış tarihi giriş tarihinden önceyse, çıkış tarihini güncelle
+                // Eğer çıkış tarihi giriş tarihinden önceyse veya eşitse, çıkış tarihini güncelle
                 if (checkoutInput.value <= checkinDate) {
                     const nextDay = new Date(checkinDate);
                     nextDay.setDate(nextDay.getDate() + 1);
                     checkoutInput.value = nextDay.toISOString().split('T')[0];
                 }
             });
+            
+            // Çıkış tarihi için başlangıç minimumu ayarla
+            checkoutInput.min = todayStr;
             
             // Mobil tarayıcılarda takvimi otomatik aç
             const dateInputs = document.querySelectorAll('.date-input');
@@ -730,14 +739,14 @@
 
             showLoading();
             
-            // Sonuçlar bölümüne scroll - en üste
+            // FİYAT HESAPLA butonu görünmeyene kadar scroll
             setTimeout(() => {
-                const resultsSection = document.getElementById('resultsSection');
-                const yOffset = -20; // Biraz üst margin
-                const y = resultsSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                const searchBtn = document.querySelector('.search-btn');
+                const searchBtnRect = searchBtn.getBoundingClientRect();
+                const scrollAmount = searchBtnRect.bottom + window.pageYOffset;
                 
                 window.scrollTo({
-                    top: y,
+                    top: scrollAmount,
                     behavior: 'smooth'
                 });
             }, 100);
