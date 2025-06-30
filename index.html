@@ -26,24 +26,12 @@
             line-height: 1.6;
         }
 
-        .header {
-            background: linear-gradient(135deg, #2c5aa0 0%, #1e3c72 100%);
-            color: white;
-            text-align: center;
-            padding: 20px;
-            margin-bottom: 30px;
-        }
 
-        .header h1 {
-            font-size: 1.8rem;
-            font-weight: 400;
-            letter-spacing: 1px;
-        }
 
         .container {
             max-width: 600px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 20px;
         }
 
         .reservation-card {
@@ -98,6 +86,7 @@
             background: #fafbfc;
             transition: all 0.3s ease;
             font-weight: 500;
+            cursor: pointer;
         }
 
         .date-input:focus {
@@ -105,6 +94,16 @@
             border-color: #3498db;
             background: white;
             box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .date-input::-webkit-calendar-picker-indicator {
+            opacity: 0;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
         }
 
         .guest-row {
@@ -171,17 +170,25 @@
 
         .child-ages-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
         }
 
         .child-age-select {
-            padding: 10px;
-            border: 1px solid #ffcc02;
-            border-radius: 8px;
-            font-size: 0.9rem;
+            padding: 12px;
+            border: 2px solid #ffcc02;
+            border-radius: 12px;
+            font-size: 0.95rem;
             background: white;
             color: #2c3e50;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .child-age-select:focus {
+            outline: none;
+            border-color: #f39c12;
+            box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.1);
         }
 
         .search-btn {
@@ -452,14 +459,10 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Online Rezervasyon</h1>
-    </div>
-
     <div class="container">
         <div class="reservation-card">
             <div class="card-header">
-                GÜVENLİ REZERVASYON
+                FİYAT HESAPLAMA
             </div>
             <div class="card-body">
                 <div class="date-row">
@@ -507,7 +510,7 @@
                 </div>
 
                 <button class="search-btn" onclick="searchRooms()">
-                    ODA ARA →
+                    FİYAT HESAPLA →
                 </button>
             </div>
         </div>
@@ -541,6 +544,20 @@
             const currentYear = new Date().getFullYear();
             document.getElementById('checkinDate').value = `${currentYear}-06-30`;
             document.getElementById('checkoutDate').value = `${currentYear}-07-01`;
+            
+            // Çıkış tarihi minimum değerini ayarla
+            document.getElementById('checkinDate').addEventListener('change', function() {
+                const checkinDate = this.value;
+                const checkoutInput = document.getElementById('checkoutDate');
+                checkoutInput.min = checkinDate;
+                
+                // Eğer çıkış tarihi giriş tarihinden önceyse, çıkış tarihini güncelle
+                if (checkoutInput.value <= checkinDate) {
+                    const nextDay = new Date(checkinDate);
+                    nextDay.setDate(nextDay.getDate() + 1);
+                    checkoutInput.value = nextDay.toISOString().split('T')[0];
+                }
+            });
         };
 
         function updateAdultCount() {
@@ -655,6 +672,15 @@
             }
 
             showLoading();
+            
+            // Sonuçlar bölümüne scroll
+            setTimeout(() => {
+                document.getElementById('resultsSection').scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }, 100);
+            
             await new Promise(resolve => setTimeout(resolve, 1000));
 
             try {
@@ -703,7 +729,7 @@
 
         function displayResults(data) {
             const { checkinDate, checkoutDate, nights, adults, childAges, price } = data;
-            const oldPrice = Math.round(price * 1.6);
+            const oldPrice = Math.round(price * 1.67); // %40 indirim için
             const depositAmount = Math.round(price * 0.25);
             
             let childStr = '';
@@ -715,17 +741,16 @@
                 <div class="room-card">
                     <div class="room-header">STANDART ODA</div>
                     <div class="room-body">
-                        <div class="stay-info">
+                        <div class="payment-info">
                             📅 <strong>Giriş:</strong> ${formatDate(checkinDate)} & <strong>Çıkış:</strong> ${formatDate(checkoutDate)}<br>
                             ${nights} Gece ${adults} Yetişkin${childStr}
                         </div>
                         
-                        <div class="discount-badge">Bugüne Özel %37 İndirim</div>
+                        <div class="discount-badge">Bugüne Özel %40 İndirim</div>
                         
                         <div class="price-section">
                             <div class="old-price">${formatPrice(oldPrice)}</div>
                             <div class="current-price">${formatPrice(price)}</div>
-                            <div class="price-note">Ön Ödemesiz Rezervasyon</div>
                         </div>
 
                         <div class="payment-info">
@@ -761,8 +786,8 @@
                                 <li>🏖️ Antalya / Alanya</li>
                                 <li>🏝️ Denize Sıfır</li>
                                 <li>🍽️ Alkollü Herşey Dahil</li>
-                                <li>🌐 www.mesuthotelalanya.com</li>
-                                <li>📞 0242 524 55 94</li>
+                                <li>🌐 <a href="https://www.mesuthotelalanya.com" target="_blank">www.mesuthotelalanya.com</a></li>
+                                <li>📞 <a href="tel:02425245594">0242 524 55 94</a></li>
                             </ul>
                         </div>
 
@@ -791,21 +816,21 @@
                             <div class="hotel-option">
                                 <h5>🏨 GRAND BARHAN HOTEL</h5>
                                 <p>🏖️ Antalya / Alanya • 🏝️ Denize Sıfır • 🍽️ Alkolsüz Herşey Dahil</p>
-                                <a href="https://www.grandbarhanhotel.net">www.grandbarhanhotel.net</a><br>
+                                <a href="https://www.grandbarhanhotel.net" target="_blank">www.grandbarhanhotel.net</a><br>
                                 <a href="tel:02425245934">📞 0242 524 59 34</a>
                             </div>
                             
                             <div class="hotel-option">
                                 <h5>🏨 DE MARE HOTEL</h5>
                                 <p>🏖️ Antalya / Alanya • 🏝️ Denize Sıfır • 🍽️ Alkolsüz Herşey Dahil</p>
-                                <a href="https://www.demarefamilyhotel.net">www.demarefamilyhotel.net</a><br>
+                                <a href="https://www.demarefamilyhotel.net" target="_blank">www.demarefamilyhotel.net</a><br>
                                 <a href="tel:02425245596">📞 0242 524 55 96</a>
                             </div>
                             
                             <div class="hotel-option">
                                 <h5>🏨 CLUB SVS HOTEL</h5>
                                 <p>🏖️ Antalya / Alanya • 🏝️ Denize Sıfır • 🍽️ Alkollü/Alkolsüz Seçenekleri</p>
-                                <a href="https://www.clubsvshotel.com">www.clubsvshotel.com</a><br>
+                                <a href="https://www.clubsvshotel.com" target="_blank">www.clubsvshotel.com</a><br>
                                 <a href="tel:02425245680">📞 0242 524 56 80</a>
                             </div>
                         </div>
