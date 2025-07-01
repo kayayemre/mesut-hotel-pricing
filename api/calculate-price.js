@@ -27,8 +27,6 @@ function parseTurkishNumber(word) {
   return turkishNumbers[word.toLocaleLowerCase("tr")] || null;
 }
 
-// Tarih, gece sayısı yakalama fonksiyonları aynı kalabilir
-
 function parseDateFromText(text, today = new Date()) {
   text = text.toLocaleLowerCase("tr");
   let date = null;
@@ -68,7 +66,7 @@ function parseDateFromText(text, today = new Date()) {
 }
 
 function parseNightCount(text) {
-  text = text.toLocaleLowerCase("tr");
+  text = text.toLowerCase();
   let re = /(\d+|bir|iki|üç|dört|beş|altı|yedi|sekiz|dokuz|on)[\s\-]*(gece|gün)/;
   let match = text.match(re);
   if (match) {
@@ -80,15 +78,10 @@ function parseNightCount(text) {
 }
 
 function parsePersonChild(text) {
-  text = text.toLocaleLowerCase("tr");
+  text = text.toLowerCase();
   let personCount = null, childCount = null, childAges = [];
 
-  // Çocuk hiç yoksa
-  if (
-    text.includes("çocuk yok") ||
-    text.includes("çocuksuz") ||
-    text.match(/(\b)yok(\b)/)
-  ) {
+  if (text.includes("çocuk yok") || text.includes("çocuksuz") || text.match(/(\b)yok(\b)/)) {
     childCount = 0;
   }
 
@@ -108,8 +101,6 @@ function parsePersonChild(text) {
   match = text.match(re);
   if (match) { personCount = parseTurkishNumber(match[1]); }
 
-  // Yaşları bul: her türlü "yaş" ve "yaşları" kombinasyonu
-  // 1) yaşları: 5 ve 8 / yaşları 5,8 / yaşları 5 ve 8
   let yasRegex = /yaş(?:ları|ı|lar)?[: ]*([\d\s,ve]+)/;
   let yasMatch = text.match(yasRegex);
   if (yasMatch) {
@@ -119,12 +110,12 @@ function parsePersonChild(text) {
       if (!isNaN(a)) childAges.push(a);
     });
   }
-  // 2) "5 ve 8 yaş", "5,8 yaş"
+
   let y2 = text.match(/(\d{1,2})\s*[ve,]\s*(\d{1,2})\s*yaş/);
   if (y2) {
     childAges = [parseInt(y2[1]), parseInt(y2[2])];
   }
-  // 3) "1 çocuk 5 yaş", "2 çocuk 4 yaş" (tek tek yaş yakala)
+
   let allAges = [];
   let matchAll = text.match(/(\d{1,2})\s*yaş/g);
   if (matchAll) {
@@ -187,10 +178,8 @@ function calculatePrice(startDate, nightCount, adults, childrenAges) {
   };
 }
 
-// 🔥 EN KRİTİK FONKSİYON (Çok satırlı / her türlü mesajı yakalar)
 function analyzeMessage(raw, session = {}) {
   let text = (raw || "").toLocaleLowerCase("tr");
-  // Çok satırlı veya birleşik mesajlar için, satır satır gez
   let lines = text.split("\n").map(x => x.trim()).filter(Boolean);
 
   let checkin, nightCount, adults, children, childrenAges = [];
@@ -215,7 +204,6 @@ function analyzeMessage(raw, session = {}) {
       nightCount = getNightCount(checkin, checkout);
     }
   }
-  // Eksik bilgi kontrolü
   let missing = [];
   if (!checkin) missing.push("giriş tarihi");
   if (!nightCount) missing.push("gece sayısı");
@@ -233,40 +221,56 @@ function analyzeMessage(raw, session = {}) {
   };
 }
 
-// API handler
+// 🧠 FINAL HANDLER
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({error:"POST kullanın"});
-  let { message, sessionId } = req.body;
+  if (req.method !== "POST") return res.status(405).json({ error: "POST kullanın" });
+
+  let { message, sessionId, checkin, nights, adults, children, childrenAges } = req.body;
   if (!sessionId) sessionId = "global";
   if (!sessionStore[sessionId]) sessionStore[sessionId] = {};
 
-  let analyze = analyzeMessage(message, sessionStore[sessionId]);
-  Object.assign(sessionStore[sessionId], analyze);
+  let analyze = {};
 
-  if (!analyze.completed) {
+  if (message) {
+    analyze = analyzeMessage(message, sessionStore[sessionId]);
+    Object.assign(sessionStore[sessionId], analyze);
+  }
+
+  if (checkin) sessionStore[sessionId].checkin = new Date(checkin);
+  if (nights) sessionStore[sessionId].nightCount = parseInt(nights);
+  if (adults) sessionStore[sessionId].adults = parseInt(adults);
+  if (children !== undefined) sessionStore[sessionId].children = parseInt(children);
+  if (childrenAges) sessionStore[sessionId].childrenAges = childrenAges;
+
+  let s = sessionStore[sessionId];
+  let missing = [];
+  if (!s.checkin) missing.push("giriş tarihi");
+  if (!s.nightCount) missing.push("gece sayısı");
+  if (!s.adults) missing.push("yetişkin sayısı");
+  if (s.children > 0 && (!s.childrenAges || s.childrenAges.length < s.children)) missing.push("çocuk yaş(ları)");
+
+  if (missing.length > 0) {
     return res.status(200).json({
       completed: false,
-      missing: analyze.missing.join(", "),
+      missing: missing.join(", "),
       session: sessionStore[sessionId],
-      message: `Lütfen ${analyze.missing.join(", ")} bilgisini de paylaşır mısınız?`
+      message: `Lütfen ${missing.join(", ")} bilgisini de paylaşır mısınız?`
     });
   }
 
-  // Fiyatı hesapla
   let hesap = calculatePrice(
-    analyze.checkin,
-    analyze.nightCount,
-    analyze.adults,
-    analyze.childrenAges
+    s.checkin,
+    s.nightCount,
+    s.adults,
+    s.childrenAges
   );
   if (hesap.error) {
     return res.status(200).json({ completed: true, error: hesap.error });
   }
 
-  // Çıkış tarihi
-  let checkoutDate = new Date(analyze.checkin);
+  let checkoutDate = new Date(s.checkin);
   checkoutDate.setDate(checkoutDate.getDate() + hesap.nights);
-  let checkinVerbose = formatDateVerbose(analyze.checkin);
+  let checkinVerbose = formatDateVerbose(s.checkin);
   let checkoutVerbose = formatDateVerbose(checkoutDate);
 
   res.status(200).json({
