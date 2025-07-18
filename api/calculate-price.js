@@ -1,11 +1,10 @@
 let sessionStore = {};
 
 const priceDatabase = [
-  { start: "2025-06-25", end: "2025-07-10", price: 2500 },
-  { start: "2025-07-11", end: "2025-09-19", price: 3175 },
-  { start: "2025-09-20", end: "2025-09-30", price: 3780 },
-  { start: "2025-10-01", end: "2025-10-15", price: 3180 },
-  { start: "2025-10-16", end: "2025-10-31", price: 2255 },
+  { start: "2025-07-11", end: "2025-09-30", price: 3330 },
+  { start: "2025-10-01", end: "2025-09-30", price: 3780 },
+  { start: "2025-10-01", end: "2025-10-15", price: 3000 },
+  { start: "2025-10-16", end: "2025-10-31", price: 2250 },
 ];
 const multiplierTable = {
   "1_0": 1.7, "1_1": 1.7, "1_2": 2.0,
